@@ -71,9 +71,9 @@ class GUI_EXPORT QgsModelDesignerFlatButtonGraphicItem : public QGraphicsObject
 #endif
 
     /**
-     * Gets the button's position.
+     * Returns the button's position.
      */
-    const QPointF getPosition() { return mPosition; };
+    QPointF getPosition() { return mPosition; };
 
 
     /**
@@ -161,22 +161,33 @@ class GUI_EXPORT QgsModelDesignerSocketGraphicItem : public QgsModelDesignerFlat
     /**
      * Constructor for QgsModelDesignerSocketGraphicItem, with the specified \a parent item.
      *
-     * The \a index argument specifies whether the index of link point 
+     * The \a index argument specifies whether the input or output index of this socket inside the component
+     * And the \a edge argument specifies if it's an input socket( Qt::Edge::TopEdge ) or output ( Qt::Edge::BottomEdge )
      *
      * The sockets will be rendered at the specified \a position
      */
     QgsModelDesignerSocketGraphicItem( QgsModelComponentGraphicItem *parent SIP_TRANSFERTHIS, QgsProcessingModelComponent *component, int index, const QPointF &position, Qt::Edge edge, const QSizeF &size = QSizeF( 11, 11 ) );
 
     void paint( QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr ) override;
-    void mousePressEvent( QGraphicsSceneMouseEvent *event ) override;
-#ifndef SIP_RUN
-    void modelPressEvent( QgsModelViewMouseEvent *event ) override;
-#endif
+    /**
+     * Returns the index of this socket in either QgsModelDesignerSocketGraphicItem::mInSockets 
+     * or QgsModelDesignerSocketGraphicItem::mOutSockets array
+     */
+    int index() const { return mIndex; };
 
-    int index() { return mIndex; };
-    Qt::Edge edge() { return mEdge; };
+    /**
+     * Returns on which edge this socket is:
+     *  * Qt::Edge::TopEdge for input socket
+     *  * Qt::Edge::BottomEdge for output socket
+     */
+    Qt::Edge edge() const { return mEdge; };
 
-    bool isInput() { return mEdge == Qt::TopEdge; }
+    /**
+     * Returns whether the socket is an input socket or not
+     * 
+     * Convenient function around mEdge member
+     */
+    bool isInput() const { return mEdge == Qt::TopEdge; };
 
     /** Return the component associated to the socket */
     QgsProcessingModelComponent *component() { return mComponent; };
@@ -188,10 +199,10 @@ class GUI_EXPORT QgsModelDesignerSocketGraphicItem : public QgsModelDesignerFlat
 
 
   private:
-    QgsModelComponentGraphicItem *mComponentItem;
-    QgsProcessingModelComponent *mComponent;
-    int mIndex;
-    Qt::Edge mEdge;
+    QgsModelComponentGraphicItem *mComponentItem = nullptr;
+    QgsProcessingModelComponent *mComponent = nullptr;
+    int mIndex = -1;
+    Qt::Edge mEdge = Qt::Edge::TopEdge;
 };
 
 ///@endcond

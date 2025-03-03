@@ -48,15 +48,27 @@ class GUI_EXPORT QgsModelViewToolLink : public QgsModelViewTool
     void deactivate() override;
 
     /**
-     * Set the from socket, usually the one you click on
-     * but if the input is already connected them we start from the other side (output)
+     * Set the from socket
+     * 
+     * In the case the user started dragging from an already linked input socket 
+     * We need to figure out, which is the output socket used as the source at the other side of the link.
+     * 
+     * This is used when the user disconnect a a link or relink to another input socket 
      */
     void setFromSocket( QgsModelDesignerSocketGraphicItem *socket );
 
+  signals:
+    /**
+     * Emitted when a change was made to the model that requires a full rebuild of the scene.
+     */
+    void requestRebuildRequired();
+
   private:
     std::unique_ptr<QgsModelViewBezierRubberBand> mBezierRubberBand;
-    QgsModelDesignerSocketGraphicItem *mFrom;
-    QgsModelDesignerSocketGraphicItem *mTo;
+    QgsModelDesignerSocketGraphicItem *mFromSocket = nullptr;
+    QgsModelDesignerSocketGraphicItem *mToSocket = nullptr;
+
+    QgsModelDesignerSocketGraphicItem *mLastHoveredSocket = nullptr;
 
     /* Used to return to select tool */
     QPointer<QgsModelViewTool> mPreviousViewTool;

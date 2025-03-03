@@ -111,6 +111,9 @@ Returns the graphic item corresponding to the specified  specified child algorit
 %End
 
     QgsModelComponentGraphicItem *parameterItem( const QString &name );
+%Docstring
+Returns the :py:class:`QgsModelComponentGraphicItem` corresponding to the specified child algorithm
+%End
 
     void selectAll();
 %Docstring

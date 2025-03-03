@@ -180,37 +180,21 @@ QgsModelDesignerSocketGraphicItem::QgsModelDesignerSocketGraphicItem( QgsModelCo
 
 void QgsModelDesignerSocketGraphicItem::paint( QPainter *painter, const QStyleOptionGraphicsItem *, QWidget * )
 {
-  if ( mHoverState )
-  {
-    painter->setPen( QPen() );
-    painter->setBrush( QBrush( QColor( 0, 0, 0, 200 ), Qt::SolidPattern ) );
-  }
-  else
-  {
-    painter->setPen( QPen() );
-    painter->setBrush( QBrush( QColor( 0, 0, 0, 33 ), Qt::SolidPattern ) );
-  }
+  painter->setPen( QPen() );
+  painter->setBrush( QBrush( QColor( 0, 0, 0, mHoverState ? 200 : 33 ), Qt::SolidPattern ) );
 
   painter->setRenderHint( QPainter::Antialiasing );
 
-  float display_size = 3.2;
-  painter->drawEllipse( getPosition(), display_size, display_size );
-  /* Uncomment to display bouding box */
-  // painter->save();
-  // painter->setPen( QPen() );
-  // painter->setBrush( QBrush() );
-  // painter->drawRect( boundingRect() );
-  // painter->restore();
-}
-
-void QgsModelDesignerSocketGraphicItem::mousePressEvent( QGraphicsSceneMouseEvent *event )
-{
-  QgsModelDesignerFlatButtonGraphicItem::mousePressEvent( event );
-}
-
-void QgsModelDesignerSocketGraphicItem::modelPressEvent( QgsModelViewMouseEvent *event )
-{
-  QgsModelDesignerFlatButtonGraphicItem::modelPressEvent( event );
+  constexpr float DISPLAY_SIZE = 3.2;
+  painter->drawEllipse( getPosition(), DISPLAY_SIZE, DISPLAY_SIZE );
+  /* Uncomment to display bounding box */
+#if 0
+  painter->save();
+  painter->setPen( QPen() );
+  painter->setBrush( QBrush() );
+  painter->drawRect( boundingRect() );
+  painter->restore();
+#endif
 }
 
 ///@endcond

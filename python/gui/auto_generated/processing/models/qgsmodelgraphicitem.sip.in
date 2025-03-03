@@ -47,9 +47,9 @@ for the button. The button will be rendered at the specified ``position`` and ``
 
 
 
-    const QPointF getPosition();
+    QPointF getPosition();
 %Docstring
-Gets the button's position.
+Returns the button's position.
 %End
 
     void setPosition( const QPointF &position );
@@ -139,20 +139,31 @@ A socket allowing linking component together
 %Docstring
 Constructor for QgsModelDesignerSocketGraphicItem, with the specified ``parent`` item.
 
-The ``index`` argument specifies whether the index of link point 
+The ``index`` argument specifies whether the input or output index of this socket inside the component
+And the ``edge`` argument specifies if it's an input socket( Qt.Edge.TopEdge ) or output ( Qt.Edge.BottomEdge )
 
 The sockets will be rendered at the specified ``position``
 %End
 
     virtual void paint( QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0 );
 
-    virtual void mousePressEvent( QGraphicsSceneMouseEvent *event );
+    int index() const;
+%Docstring
+Returns the index of this socket in either QgsModelDesignerSocketGraphicItem.mInSockets 
+or QgsModelDesignerSocketGraphicItem.mOutSockets array
+%End
+    Qt::Edge edge() const;
+%Docstring
+Returns on which edge this socket is:
+* Qt.Edge.TopEdge for input socket
+* Qt.Edge.BottomEdge for output socket
+%End
+    bool isInput() const;
+%Docstring
+Returns whether the socket is an input socket or not
 
-
-    int index();
-
-    bool isInput();
-
+Convenient function around mEdge member
+%End
     QgsProcessingModelComponent *component();
 %Docstring
 Return the component associated to the socket */

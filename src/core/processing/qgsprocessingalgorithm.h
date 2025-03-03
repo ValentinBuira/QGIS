@@ -300,13 +300,6 @@ class CORE_EXPORT QgsProcessingAlgorithm
     const QgsProcessingOutputDefinition *outputDefinition( const QString &name ) const SIP_HOLDGIL;
 
     /**
-     * Returns the index matching the output by \a name. Matching is done in a case-insensitive
-     * manner.
-     * \see outputDefinitions()
-     */
-    int outputDefinitionIndex( const QString &name ) const SIP_HOLDGIL;
-
-    /**
      * Returns TRUE if this algorithm generates HTML outputs.
      */
     bool hasHtmlOutputs() const SIP_HOLDGIL;
