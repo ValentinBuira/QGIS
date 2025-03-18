@@ -615,7 +615,10 @@ The development version
     enum class HttpMethod /BaseType=IntEnum/
     {
       Get,
-      Post
+      Post,
+      Head,
+      Put,
+      Delete,
     };
 
     enum class VectorExportResult /BaseType=IntEnum/
@@ -1504,6 +1507,7 @@ The development version
       RedrawLayerOnly,
       FixedRangePerBand,
       RepresentsTemporalValues,
+      FixedDateTime,
     };
 
     enum class TemporalIntervalMatchMethod /BaseType=IntEnum/

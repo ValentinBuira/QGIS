@@ -19,6 +19,12 @@
 #include "qgsgui.h"
 #include "qgsvectorlayer.h"
 #include "qgsvectorlayerexporter.h"
+#include "qgsmapcanvas.h"
+#include "qgsexpressioncontextutils.h"
+#include "qgsdatabaseschemacombobox.h"
+#include "qgsproviderregistry.h"
+#include <QPushButton>
+#include <QItemSelectionModel>
 
 QgsDbImportVectorLayerDialog::QgsDbImportVectorLayerDialog( QgsAbstractDatabaseProviderConnection *connection, QWidget *parent )
   : QDialog( parent )
@@ -30,22 +36,46 @@ QgsDbImportVectorLayerDialog::QgsDbImportVectorLayerDialog( QgsAbstractDatabaseP
 
   mSourceLayerComboBox->setFilters( Qgis::LayerFilter::VectorLayer );
   connect( mSourceLayerComboBox, &QgsMapLayerComboBox::layerChanged, this, &QgsDbImportVectorLayerDialog::sourceLayerComboChanged );
+  connect( mCrsSelector, &QgsProjectionSelectionWidget::crsChanged, this, [this]( const QgsCoordinateReferenceSystem &crs ) {
+    mExtentGroupBox->setOutputCrs( crs );
+  } );
 
   connect( mButtonBox, &QDialogButtonBox::rejected, this, &QDialog::reject );
   connect( mButtonBox, &QDialogButtonBox::accepted, this, &QgsDbImportVectorLayerDialog::doImport );
 
   Q_ASSERT( connection );
 
-  mEditSchema->setReadOnly( true );
+  mFieldsView->setDestinationEditable( true );
+  try
+  {
+    mFieldsView->setNativeTypes( connection->nativeTypes() );
+  }
+  catch ( QgsProviderConnectionException &e )
+  {
+    QgsDebugError( QStringLiteral( "Could not retrieve connection native types: %1" ).arg( e.what() ) );
+  }
+  connect( mResetButton, &QPushButton::clicked, this, &QgsDbImportVectorLayerDialog::loadFieldsFromLayer );
+  connect( mAddButton, &QPushButton::clicked, this, &QgsDbImportVectorLayerDialog::addField );
+  connect( mDeleteButton, &QPushButton::clicked, mFieldsView, &QgsFieldMappingWidget::removeSelectedFields );
+  connect( mUpButton, &QPushButton::clicked, mFieldsView, &QgsFieldMappingWidget::moveSelectedFieldsUp );
+  connect( mDownButton, &QPushButton::clicked, mFieldsView, &QgsFieldMappingWidget::moveSelectedFieldsDown );
 
   const bool supportsSchemas = mConnection->capabilities().testFlag( QgsAbstractDatabaseProviderConnection::Schemas );
-  if ( !supportsSchemas )
+  if ( supportsSchemas )
+  {
+    std::unique_ptr<QgsAbstractDatabaseProviderConnection> schemeComboConn;
+    QgsProviderMetadata *md = QgsProviderRegistry::instance()->providerMetadata( mConnection->providerKey() );
+    mSchemaCombo = new QgsDatabaseSchemaComboBox( static_cast<QgsAbstractDatabaseProviderConnection *>( md->createConnection( mConnection->uri(), QVariantMap() ) ) );
+    mLayoutSchemeCombo->addWidget( mSchemaCombo );
+  }
+  else
   {
     delete mLabelSchemas;
     mLabelSchemas = nullptr;
-    delete mEditSchema;
-    mEditSchema = nullptr;
+    delete mLayoutSchemeCombo;
+    mLayoutSchemeCombo = nullptr;
   }
+
   const bool supportsPrimaryKeyName = mConnection->tableImportCapabilities().testFlag( Qgis::DatabaseProviderTableImportCapability::SetPrimaryKeyName );
   if ( !supportsPrimaryKeyName )
   {
@@ -72,14 +102,24 @@ QgsDbImportVectorLayerDialog::QgsDbImportVectorLayerDialog( QgsAbstractDatabaseP
     delete mEditComment;
     mEditComment = nullptr;
   }
+
+  mExtentGroupBox->setTitleBase( tr( "Filter by Extent" ) );
+  mExtentGroupBox->setCheckable( true );
+  mExtentGroupBox->setChecked( false );
+  mExtentGroupBox->setCollapsed( true );
+
+  mFilterExpressionWidget->registerExpressionContextGenerator( this );
+
+  // populate initial layer
+  sourceLayerComboChanged();
 }
 
 QgsDbImportVectorLayerDialog::~QgsDbImportVectorLayerDialog() = default;
 
 void QgsDbImportVectorLayerDialog::setDestinationSchema( const QString &schema )
 {
-  if ( mEditSchema )
-    mEditSchema->setText( schema );
+  if ( mSchemaCombo )
+    mSchemaCombo->setSchema( schema );
 }
 
 void QgsDbImportVectorLayerDialog::setSourceUri( const QgsMimeDataUtils::Uri &uri )
@@ -121,6 +161,18 @@ void QgsDbImportVectorLayerDialog::setSourceLayer( QgsVectorLayer *layer )
     mEditGeometryColumnName->setEnabled( isSpatial );
   if ( mCrsSelector )
     mCrsSelector->setEnabled( isSpatial );
+
+  mExtentGroupBox->setEnabled( isSpatial );
+  if ( !isSpatial )
+    mExtentGroupBox->setChecked( false );
+
+  const bool extentFilterEnabled = mExtentGroupBox->isChecked();
+  mExtentGroupBox->setOriginalExtent( mSourceLayer->extent(), mSourceLayer->crs() );
+  mExtentGroupBox->setOutputExtentFromOriginal();
+  mExtentGroupBox->setChecked( extentFilterEnabled );
+  mExtentGroupBox->setCollapsed( !extentFilterEnabled );
+
+  mFilterExpressionWidget->setLayer( mSourceLayer );
 
   if ( mEditPrimaryKey )
   {
@@ -168,11 +220,38 @@ void QgsDbImportVectorLayerDialog::setSourceLayer( QgsVectorLayer *layer )
   {
     mEditComment->setPlainText( mSourceLayer->metadata().abstract() );
   }
+
+  mFieldsView->setSourceLayer( mSourceLayer );
+  mFieldsView->setSourceFields( mSourceLayer->fields() );
+  mFieldsView->setDestinationFields( mSourceLayer->fields() );
+}
+
+void QgsDbImportVectorLayerDialog::loadFieldsFromLayer()
+{
+  if ( mSourceLayer )
+  {
+    mFieldsView->setSourceFields( mSourceLayer->fields() );
+    mFieldsView->setDestinationFields( mSourceLayer->fields() );
+  }
+}
+
+void QgsDbImportVectorLayerDialog::addField()
+{
+  const int rowCount = mFieldsView->model()->rowCount();
+  mFieldsView->appendField( QgsField( QStringLiteral( "new_field" ) ), QStringLiteral( "NULL" ) );
+  const QModelIndex index = mFieldsView->model()->index( rowCount, 0 );
+  mFieldsView->selectionModel()->select(
+    index,
+    QItemSelectionModel::SelectionFlags(
+      QItemSelectionModel::Clear | QItemSelectionModel::Select | QItemSelectionModel::Current | QItemSelectionModel::Rows
+    )
+  );
+  mFieldsView->scrollTo( index );
 }
 
 QString QgsDbImportVectorLayerDialog::schema() const
 {
-  return mEditSchema ? mEditSchema->text() : QString();
+  return mSchemaCombo ? mSchemaCombo->currentSchema() : QString();
 }
 
 QString QgsDbImportVectorLayerDialog::tableName() const
@@ -183,6 +262,15 @@ QString QgsDbImportVectorLayerDialog::tableName() const
 QString QgsDbImportVectorLayerDialog::tableComment() const
 {
   return mEditComment ? mEditComment->toPlainText() : QString();
+}
+
+void QgsDbImportVectorLayerDialog::setMapCanvas( QgsMapCanvas *canvas )
+{
+  if ( canvas )
+  {
+    mExtentGroupBox->setCurrentExtent( canvas->mapSettings().visibleExtent(), canvas->mapSettings().destinationCrs() );
+    mExtentGroupBox->setMapCanvas( canvas, false );
+  }
 }
 
 void QgsDbImportVectorLayerDialog::doImport()
@@ -202,8 +290,8 @@ std::unique_ptr<QgsVectorLayerExporterTask> QgsDbImportVectorLayerDialog::create
 
   QgsAbstractDatabaseProviderConnection::VectorLayerExporterOptions exporterOptions;
   exporterOptions.layerName = mEditTable->text();
-  if ( mEditSchema )
-    exporterOptions.schema = mEditSchema->text();
+  if ( mSchemaCombo )
+    exporterOptions.schema = mSchemaCombo->currentSchema();
   exporterOptions.wkbType = mSourceLayer->wkbType();
   if ( mEditPrimaryKey && !mEditPrimaryKey->text().trimmed().isEmpty() )
     exporterOptions.primaryKeyColumns << mEditPrimaryKey->text();
@@ -226,19 +314,51 @@ std::unique_ptr<QgsVectorLayerExporterTask> QgsDbImportVectorLayerDialog::create
     allProviderOptions.insert( it.key(), it.value() );
   }
 
-  QgsCoordinateReferenceSystem destinationCrs;
-  if ( mCrsSelector )
-  {
-    destinationCrs = mCrsSelector->crs();
-  }
-
   // overwrite?
   if ( mChkDropTable->isChecked() )
   {
     allProviderOptions.insert( QStringLiteral( "overwrite" ), true );
   }
 
-  return std::make_unique<QgsVectorLayerExporterTask>( mSourceLayer->clone(), destinationUri, mConnection->providerKey(), destinationCrs, allProviderOptions, true );
+  // This flag tells to the provider that field types do not need conversion -- we have already
+  // explicitly set all fields to provider-specific field types and we do not need to treat
+  // them as generic/different provider fields
+  allProviderOptions.insert( QStringLiteral( "skipConvertFields" ), true );
+
+  QgsVectorLayerExporter::ExportOptions exportOptions;
+  if ( mCrsSelector )
+  {
+    exportOptions.setDestinationCrs( mCrsSelector->crs() );
+  }
+  exportOptions.setTransformContext( mSourceLayer->transformContext() );
+  if ( !mFilterExpressionWidget->expression().isEmpty() )
+  {
+    exportOptions.setFilterExpression( mFilterExpressionWidget->expression() );
+    exportOptions.setExpressionContext( createExpressionContext() );
+  }
+
+  if ( mExtentGroupBox->isEnabled() && mExtentGroupBox->isChecked() )
+  {
+    exportOptions.setExtent( QgsReferencedRectangle( mExtentGroupBox->outputExtent(), mExtentGroupBox->outputCrs() ) );
+  }
+
+  const QList<QgsFieldMappingModel::Field> fieldMapping = mFieldsView->mapping();
+  QList<QgsVectorLayerExporter::OutputField> outputFields;
+  outputFields.reserve( fieldMapping.size() );
+  for ( const QgsFieldMappingModel::Field &field : fieldMapping )
+  {
+    outputFields.append( QgsVectorLayerExporter::OutputField( field.field, field.expression ) );
+  }
+  exportOptions.setOutputFields( outputFields );
+
+  return std::make_unique<QgsVectorLayerExporterTask>( mSourceLayer->clone(), destinationUri, mConnection->providerKey(), exportOptions, allProviderOptions, true );
+}
+
+QgsExpressionContext QgsDbImportVectorLayerDialog::createExpressionContext() const
+{
+  QgsExpressionContext expContext;
+  expContext.appendScopes( QgsExpressionContextUtils::globalProjectLayerScopes( mSourceLayer ) );
+  return expContext;
 }
 
 void QgsDbImportVectorLayerDialog::sourceLayerComboChanged()
