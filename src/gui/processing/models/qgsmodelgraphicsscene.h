@@ -99,6 +99,15 @@ class GUI_EXPORT QgsModelGraphicsScene : public QGraphicsScene
     void mousePressEvent( QGraphicsSceneMouseEvent *event ) override;
 
     /**
+     * Calculates the bouding bounds of all components of the model. 
+     * \param margin optional marginal ( absolute value in scene coordinate) to add around items
+     * \returns model bounds, in scene units.
+     *
+     */
+    QRectF modelBounds( double margin ) const;
+
+
+    /**
      * Populates the scene by creating items representing the specified \a model.
      */
     void createItems( QgsProcessingModelAlgorithm *model, QgsProcessingContext &context );
@@ -159,6 +168,9 @@ class GUI_EXPORT QgsModelGraphicsScene : public QGraphicsScene
      * Shows a warning message, allowing users to click a button to see the full details (\a longMessage).
      */
     void showWarning( const QString &shortMessage, const QString &title, const QString &longMessage, Qgis::MessageLevel level = Qgis::MessageLevel::Warning ) const;
+
+  public slots:
+    void updateBounds();
 
   signals:
 

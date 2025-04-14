@@ -87,6 +87,17 @@ Returns the current combination of flags set for the scene.
     virtual void mousePressEvent( QGraphicsSceneMouseEvent *event );
 
 
+    QRectF modelBounds( double margin ) const;
+%Docstring
+Calculates the bouding bounds of all components of the model.
+
+:param margin: optional marginal ( absolute value in scene coordinate)
+               to add around items
+
+:return: model bounds, in scene units.
+%End
+
+
     void createItems( QgsProcessingModelAlgorithm *model, QgsProcessingContext &context );
 %Docstring
 Populates the scene by creating items representing the specified
@@ -153,6 +164,9 @@ Sets the message ``bar`` associated with the scene.
 Shows a warning message, allowing users to click a button to see the
 full details (``longMessage``).
 %End
+
+  public slots:
+    void updateBounds();
 
   signals:
 
