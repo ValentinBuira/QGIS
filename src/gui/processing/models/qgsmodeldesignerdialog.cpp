@@ -133,6 +133,9 @@ QgsModelDesignerDialog::QgsModelDesignerDialog( QWidget *parent, Qt::WindowFlags
   mMessageBar->setSizePolicy( QSizePolicy::Minimum, QSizePolicy::Fixed );
   mainLayout->insertWidget( 0, mMessageBar );
 
+  mQuickWidget->setSource( QUrl::fromLocalFile( "/home/valentin/Documents/QGIS/src/ui/processing/ModelCanvas.qml" ) );
+  mQuickWidget->show();
+
   mView->setAcceptDrops( true );
   QgsSettings settings;
 
