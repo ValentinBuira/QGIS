@@ -204,6 +204,7 @@ void QgsProcessingFieldMapPanelWidget::loadLayerFields()
 {
   if ( QgsVectorLayer *vl = qobject_cast<QgsVectorLayer *>( mLayerCombo->currentLayer() ) )
   {
+    mFieldsView->setSourceFields( vl->fields() );
     mFieldsView->setDestinationFields( vl->fields() );
   }
 }
