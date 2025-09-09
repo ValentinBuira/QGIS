@@ -25,6 +25,8 @@
 #include "qgsmemoryproviderutils.h"
 #include "qgsprocessingparameters.h"
 #include "qgsprocessingalgorithm.h"
+#include "qgsprocessingmodelalgorithm.h"
+#include "qgsprocessingmodelresult.h"
 #include "qgsvectorlayerfeatureiterator.h"
 #include "qgsexpressioncontextscopegenerator.h"
 #include "qgsfileutils.h"
@@ -185,6 +187,73 @@ QList<QgsMapLayer *> QgsProcessingUtils::compatibleLayers( QgsProject *project, 
   }
   return layers;
 }
+
+// QList< QgsMapLayer * > QgsProcessingUtils::listLayersFromPreviousRun(QgsProcessingModelAlgorithm *model, QgsProcessingModelResult lastResult ) {
+
+//   QList<QgsMapLayer *> outputLayers;
+
+//   qDebug() << "Count last Result:" << lastResult.childResults().count();
+
+//   const QMap<QString, QgsProcessingModelChildAlgorithm> childAlgs = model->childAlgorithms();
+
+//   for ( auto it = childAlgs.constBegin(); it != childAlgs.constEnd(); ++it )
+//   {
+//     const QgsProcessingModelChildAlgorithmResult result = lastResult.childResults().value( it.value().childId() );
+//     qDebug() <<"childid:" << it.value().childId();
+//     const QVariantMap childAlgorithmOutputs = result.outputs();
+
+//     QMap<QString, QVariant>::const_iterator outputIt = childAlgorithmOutputs.constBegin();
+//     for ( ; outputIt != childAlgorithmOutputs.constEnd(); ++outputIt )
+//     {
+//       if ( outputIt.value().type() == QVariant::String )
+//       {
+//         qDebug() <<"outputIt.value():" << outputIt.value().toString();
+//         if ( QgsMapLayer *resultLayer = mapLayerFromString( outputIt.value().toString(), context ) )
+//         {
+//           outputLayers.append( resultLayer );
+//         }
+//       }
+//     }
+//   }
+
+//   return outputLayers;
+// }
+
+QList< QgsMapLayer * > QgsProcessingUtils::listLayersFromPreviousRun( QgsProcessingModelAlgorithm *model, QgsProcessingContext &context )
+{
+  QList<QgsMapLayer *> outputLayers;
+
+  // return listLayersFromPreviousRun(model, context.modelResult());
+
+  QgsProcessingModelResult lastResult = context.modelResult();
+
+  qDebug() << "Count last Result:" << lastResult.childResults().count();
+
+  const QMap<QString, QgsProcessingModelChildAlgorithm> childAlgs = model->childAlgorithms();
+
+  for ( auto it = childAlgs.constBegin(); it != childAlgs.constEnd(); ++it )
+  {
+    const QgsProcessingModelChildAlgorithmResult result = lastResult.childResults().value( it.value().childId() );
+    qDebug() << "childid:" << it.value().childId();
+    const QVariantMap childAlgorithmOutputs = result.outputs();
+
+    QMap<QString, QVariant>::const_iterator outputIt = childAlgorithmOutputs.constBegin();
+    for ( ; outputIt != childAlgorithmOutputs.constEnd(); ++outputIt )
+    {
+      if ( outputIt.value().type() == QVariant::String )
+      {
+        qDebug() << "outputIt.value():" << outputIt.value().toString();
+        if ( QgsMapLayer *resultLayer = mapLayerFromString( outputIt.value().toString(), context ) )
+        {
+          outputLayers.append( resultLayer );
+        }
+      }
+    }
+  }
+
+  return outputLayers;
+}
+
 
 QString QgsProcessingUtils::encodeProviderKeyAndUri( const QString &providerKey, const QString &uri )
 {

@@ -577,7 +577,7 @@ bool QgsModelDesignerDialog::checkForUnsavedChanges()
 
 void QgsModelDesignerDialog::setLastRunResult( const QgsProcessingModelResult &result )
 {
-  mLastResult.mergeWith( result );
+  mLastResult.mergeWith( result ); // truly set at this moment
   if ( mScene )
     mScene->setLastRunResult( mLastResult );
 }
@@ -595,6 +595,14 @@ void QgsModelDesignerDialog::zoomIn()
   const double factor = settings.value( QStringLiteral( "/qgis/zoom_favor" ), 2.0 ).toDouble();
   mView->scale( factor, factor );
   mView->centerOn( point );
+
+  qDebug() << "list all temporary output";
+  QList< QgsMapLayer * > tmpLayers = QgsProcessingUtils::listLayersFromPreviousRun( model(), mLayerStore );
+
+  for ( auto layer : tmpLayers )
+  {
+    qDebug() << "layer name" << layer->name();
+  }
 }
 
 void QgsModelDesignerDialog::zoomOut()
@@ -1098,6 +1106,11 @@ void QgsModelDesignerDialog::run( const QSet<QString> &childAlgorithmSubset )
 
   dialog->exec();
 }
+
+// for each child algorithm
+// for each res for child algorithm
+// for each output in res
+
 
 void QgsModelDesignerDialog::showChildAlgorithmOutputs( const QString &childId )
 {

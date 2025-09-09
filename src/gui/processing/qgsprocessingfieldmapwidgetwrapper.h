@@ -42,6 +42,13 @@ class GUI_EXPORT QgsProcessingFieldMapPanelWidget : public QgsPanelWidget, priva
     void setValue( const QVariant &value );
 
     /**
+     * 
+     */
+    void setModel( QgsProcessingModelAlgorithm *model );
+
+
+    void fillLayerTemplateFromModel( QgsProcessingContext &context );
+    /**
      * Register an expression context \a generator class that will be used to retrieve
      * an expression context for the widget.
      */
@@ -58,6 +65,7 @@ class GUI_EXPORT QgsProcessingFieldMapPanelWidget : public QgsPanelWidget, priva
 
   private:
     QgsFieldMappingModel *mModel = nullptr;
+    QgsProcessingModelAlgorithm *mModelAlgorithm = nullptr;
 
     QgsVectorLayer *mLayer = nullptr;
     bool mSkipConfirmDialog = false;
@@ -98,6 +106,7 @@ class GUI_EXPORT QgsProcessingFieldMapWidgetWrapper : public QgsAbstractProcessi
       const QgsProcessingParameterDefinition *definition = nullptr,
       const QgsProcessingAlgorithm *algorithm = nullptr
     ) override;
+    void setWidgetContext( const QgsProcessingParameterWidgetContext &context ) override;
 
     void postInitialize( const QList<QgsAbstractProcessingParameterWidgetWrapper *> &wrappers ) override;
     int stretch() const override;
@@ -107,6 +116,7 @@ class GUI_EXPORT QgsProcessingFieldMapWidgetWrapper : public QgsAbstractProcessi
 
   protected:
     void setWidgetValue( const QVariant &value, QgsProcessingContext &context ) override;
+
     QVariant widgetValue() const override;
 
     QString modelerExpressionFormatString() const override;

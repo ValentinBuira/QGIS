@@ -139,7 +139,10 @@ QgsProcessingModelerParameterWidget::~QgsProcessingModelerParameterWidget() = de
 void QgsProcessingModelerParameterWidget::setWidgetContext( const QgsProcessingParameterWidgetContext &context )
 {
   if ( mStaticWidgetWrapper )
+  {
+    qDebug() << mParameterDefinition->description() << ":QgsProcessingModelerParameterWidget::setWidgetContext";
     mStaticWidgetWrapper->setWidgetContext( context );
+  }
 }
 
 void QgsProcessingModelerParameterWidget::registerProcessingContextGenerator( QgsProcessingContextGenerator *generator )
@@ -165,6 +168,8 @@ void QgsProcessingModelerParameterWidget::setWidgetValue( const QgsProcessingMod
 {
   // we make a copy of all attributes and store locally, so that users can flick between
   // sources without losing their current value
+
+  qDebug() << mParameterDefinition->description() << ":QgsProcessingModelerParameterWidget::setWidgetValue";
   mStaticValue = value.staticValue();
   mModelInputParameterName = value.parameterName();
   mOutputChildId = value.outputChildId();
@@ -177,6 +182,7 @@ void QgsProcessingModelerParameterWidget::setWidgetValue( const QgsProcessingMod
 
 void QgsProcessingModelerParameterWidget::setWidgetValue( const QList<QgsProcessingModelChildParameterSource> &values )
 {
+  qDebug() << mParameterDefinition->description() << ":QgsProcessingModelerParameterWidget::setWidgetValue";
   if ( values.size() == 1 )
     setWidgetValue( values.at( 0 ) );
   else

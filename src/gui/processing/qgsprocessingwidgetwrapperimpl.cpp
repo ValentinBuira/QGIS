@@ -6407,6 +6407,7 @@ void QgsProcessingMapLayerWidgetWrapper::setWidgetContext( const QgsProcessingPa
 
 void QgsProcessingMapLayerWidgetWrapper::setWidgetValue( const QVariant &value, QgsProcessingContext &context )
 {
+  qDebug() << parameterDefinition()->description() << ":QgsProcessingMapLayerWidgetWrapper::setWidgetValue";
   if ( mComboBox )
     mComboBox->setValue( value, context );
 }
@@ -7191,7 +7192,11 @@ void QgsProcessingMultipleLayerPanelWidget::setModel( QgsProcessingModelAlgorith
 {
   mModel = model;
   if ( !model )
+  {
+    qDebug() << "NO MODEL";
     return;
+  }
+  qDebug() << "THERE IS A MODEL";
 
   switch ( mParam->layerType() )
   {
@@ -7280,6 +7285,7 @@ void QgsProcessingMultipleLayerPanelWidget::showDialog()
   QgsPanelWidget *panel = QgsPanelWidget::findParentPanel( this );
   if ( panel && panel->dockMode() )
   {
+    qDebug() << "in dock mode ";
     QgsProcessingMultipleInputPanelWidget *widget = new QgsProcessingMultipleInputPanelWidget( mParam, mValue, mModelSources, mModel );
     widget->setPanelTitle( mParam->description() );
     widget->setProject( mProject );
@@ -7291,6 +7297,7 @@ void QgsProcessingMultipleLayerPanelWidget::showDialog()
   }
   else
   {
+    qDebug() << "not in dock mdoe ";
     QgsProcessingMultipleInputDialog dlg( mParam, mValue, mModelSources, mModel, this, Qt::WindowFlags() );
     dlg.setProject( mProject );
     if ( dlg.exec() )
@@ -7366,6 +7373,7 @@ QWidget *QgsProcessingMultipleLayerWidgetWrapper::createWidget()
 
 void QgsProcessingMultipleLayerWidgetWrapper::setWidgetContext( const QgsProcessingParameterWidgetContext &context )
 {
+  qDebug() << "QgsProcessingMultipleLayerWidgetWrapper::setWidgetContext";
   QgsAbstractProcessingParameterWidgetWrapper::setWidgetContext( context );
   if ( mPanel )
   {
@@ -7379,6 +7387,7 @@ void QgsProcessingMultipleLayerWidgetWrapper::setWidgetValue( const QVariant &va
 {
   if ( mPanel )
   {
+    qDebug() << "QgsProcessingMultipleLayerWidgetWrapper::setWidgetValue";
     QVariantList opts;
     if ( value.isValid() )
     {

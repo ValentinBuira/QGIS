@@ -260,6 +260,9 @@ their :py:func:`QgsMapLayer.name()` value.
 .. seealso:: :py:func:`compatibleVectorLayers`
 %End
 
+    static QList< QgsMapLayer * > listLayersFromPreviousRun( QgsProcessingModelAlgorithm *model, QgsProcessingContext &context );
+
+
     static QString encodeProviderKeyAndUri( const QString &providerKey, const QString &uri );
 %Docstring
 Encodes a provider key and layer ``uri`` to a single string, for use

@@ -28,6 +28,7 @@
 
 #include "qgsprocessingcontext.h"
 #include "qgsprocessingmodelalgorithm.h"
+#include "qgsprocessingutils.h"
 
 #include "qgsprocessingparameterfieldmap.h"
 
@@ -209,6 +210,27 @@ void QgsProcessingFieldMapPanelWidget::loadLayerFields()
   }
 }
 
+void QgsProcessingFieldMapPanelWidget::setModel( QgsProcessingModelAlgorithm *model )
+{
+  mModelAlgorithm = model;
+  // if ( !model )
+  //   return;
+}
+
+void QgsProcessingFieldMapPanelWidget::fillLayerTemplateFromModel( QgsProcessingContext &context )
+{
+  if ( !mModelAlgorithm )
+    return;
+
+  qDebug() << "fillLayerTemplateFromModel!";
+
+
+  mLayerCombo->setAdditionalLayers(
+    QgsProcessingUtils::listLayersFromPreviousRun( mModelAlgorithm, context )
+  );
+}
+
+
 //
 // QgsProcessingFieldMapParameterDefinitionWidget
 //
@@ -300,8 +322,12 @@ QWidget *QgsProcessingFieldMapWidgetWrapper::createWidget()
     emit widgetValueHasChanged( this );
   } );
 
+  if ( type() == Qgis::ProcessingMode::Modeler )
+    mPanel->setModel( widgetContext().model() );
+
   return mPanel;
 }
+
 
 QgsProcessingAbstractParameterDefinitionWidget *QgsProcessingFieldMapWidgetWrapper::createParameterDefinitionWidget( QgsProcessingContext &context, const QgsProcessingParameterWidgetContext &widgetContext, const QgsProcessingParameterDefinition *definition, const QgsProcessingAlgorithm *algorithm )
 {
@@ -331,6 +357,7 @@ void QgsProcessingFieldMapWidgetWrapper::postInitialize( const QList<QgsAbstract
     }
 
     case Qgis::ProcessingMode::Modeler:
+      // connect
       break;
   }
 }
@@ -379,10 +406,45 @@ void QgsProcessingFieldMapWidgetWrapper::setParentLayerWrapperValue( const QgsAb
     mPanel->setLayer( layer );
 }
 
-void QgsProcessingFieldMapWidgetWrapper::setWidgetValue( const QVariant &value, QgsProcessingContext & )
+void QgsProcessingFieldMapWidgetWrapper::setWidgetValue( const QVariant &value, QgsProcessingContext &context )
 {
+  qDebug() << parameterDefinition()->description() << ":QgsProcessingFieldMapWidgetWrapper::setWidgetValue";
   if ( mPanel )
     mPanel->setValue( value );
+
+  if ( type() == Qgis::ProcessingMode::Modeler )
+  {
+    qDebug() << "fill the template combobox";
+
+    if ( mProcessingContextGenerator )
+    {
+      auto *ctx = mProcessingContextGenerator->processingContext();
+      mPanel->fillLayerTemplateFromModel( *ctx );
+    }
+
+    else
+    {
+      // mPanel->fillLayerTemplateFromModel(context);
+      mPanel->fillLayerTemplateFromModel( context );
+    }
+
+
+    // QgsProcessingUtils::listLayersFromPreviousRun(context)
+  }
+  // mPanel->setModel( widgetContext().model() );
+}
+
+void QgsProcessingFieldMapWidgetWrapper::setWidgetContext( const QgsProcessingParameterWidgetContext &context )
+{
+  qDebug() << parameterDefinition()->description() << ":QgsProcessingFieldMapWidgetWrapper::setWidgetContext";
+  QgsAbstractProcessingParameterWidgetWrapper::setWidgetContext( context );
+  if ( mPanel )
+  {
+    if ( type() == Qgis::ProcessingMode::Modeler )
+    {
+      mPanel->setModel( widgetContext().model() );
+    }
+  }
 }
 
 QVariant QgsProcessingFieldMapWidgetWrapper::widgetValue() const

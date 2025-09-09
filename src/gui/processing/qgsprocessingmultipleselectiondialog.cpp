@@ -324,6 +324,7 @@ QgsProcessingMultipleInputPanelWidget::QgsProcessingMultipleInputPanelWidget( co
   setAcceptDrops( true );
   for ( const QgsProcessingModelChildParameterSource &source : modelSources )
   {
+    qDebug() << "addOption 1" << "  " << source.friendlyIdentifier( model );
     addOption( QVariant::fromValue( source ), source.friendlyIdentifier( model ), false, true );
   }
 }

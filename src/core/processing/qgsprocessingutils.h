@@ -26,6 +26,7 @@
 #include "qgsprocessing.h"
 #include "qgsproxyfeaturesink.h"
 #include "qgsremappingproxyfeaturesink.h"
+// #include "qgsprocessingmodelalgorithm.h"
 
 class QgsMeshLayer;
 class QgsPluginLayer;
@@ -35,6 +36,8 @@ class QgsMapLayerStore;
 class QgsProcessingFeedback;
 class QgsProcessingFeatureSource;
 class QgsProcessingAlgorithm;
+class QgsProcessingModelAlgorithm;
+class QgsProcessingModelResult;
 class QgsVectorTileLayer;
 class QgsPointCloudLayer;
 class QgsAnnotationLayer;
@@ -226,6 +229,10 @@ class CORE_EXPORT QgsProcessingUtils
      * \see compatibleVectorLayers()
      */
     static QList< QgsMapLayer * > compatibleLayers( QgsProject *project, bool sort = true );
+
+    static QList< QgsMapLayer * > listLayersFromPreviousRun( QgsProcessingModelAlgorithm *model, QgsProcessingContext &context );
+    // static QList< QgsMapLayer * > listLayersFromPreviousRun(QgsProcessingModelAlgorithm *model, QgsProcessingModelResult lastResult );
+
 
     /**
      * Encodes a provider key and layer \a uri to a single string, for use with

@@ -368,6 +368,7 @@ void QgsAbstractProcessingParameterWidgetWrapper::setDynamicParentLayerParameter
 
 QgsProcessingModelerParameterWidget *QgsProcessingParameterWidgetFactoryInterface::createModelerWidgetWrapper( QgsProcessingModelAlgorithm *model, const QString &childId, const QgsProcessingParameterDefinition *parameter, QgsProcessingContext &context )
 {
+  // qDebug() << "create a modeler widget?";
   auto widget = std::make_unique<QgsProcessingModelerParameterWidget>( model, childId, parameter, context );
   widget->populateSources( compatibleParameterTypes(), compatibleOutputTypes(), compatibleDataTypes( parameter ) );
   widget->setExpressionHelpText( modelerExpressionFormatString() );

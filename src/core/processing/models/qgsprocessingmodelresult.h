@@ -140,6 +140,7 @@ class CORE_EXPORT QgsProcessingModelResult
      *
      * Map keys refer to the child algorithm IDs.
      */
+
     QMap< QString, QgsProcessingModelChildAlgorithmResult > childResults() const { return mChildResults; }
 
     /**

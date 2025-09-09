@@ -157,7 +157,7 @@ QgsAbstractProcessingParameterWidgetWrapper *QgsProcessingGuiRegistry::createPar
 {
   if ( !parameter )
     return nullptr;
-
+  // qDebug() << "createParameterWidgetWrapper?";
   const QVariantMap metadata = parameter->metadata();
   const QString widgetType = metadata.value( QStringLiteral( "widget_wrapper" ) ).toMap().value( QStringLiteral( "widget_type" ) ).toString();
   const QString parameterType = !widgetType.isEmpty() ? widgetType : parameter->type();
@@ -181,6 +181,7 @@ QgsProcessingModelerParameterWidget *QgsProcessingGuiRegistry::createModelerPara
 
 QgsProcessingAbstractParameterDefinitionWidget *QgsProcessingGuiRegistry::createParameterDefinitionWidget( const QString &type, QgsProcessingContext &context, const QgsProcessingParameterWidgetContext &widgetContext, const QgsProcessingParameterDefinition *definition, const QgsProcessingAlgorithm *algorithm )
 {
+  // qDebug() << "parameter definition ?";
   if ( !mParameterWidgetFactories.contains( type ) )
     return nullptr;
 

@@ -114,6 +114,7 @@ Merges this set of results with an ``other`` set of results.
 Conflicting results from ``other`` will replace results in this object.
 %End
 
+
     QMap< QString, QgsProcessingModelChildAlgorithmResult > childResults() const;
 %Docstring
 Returns the map of child algorithm results.

@@ -50,6 +50,7 @@ try:
     QgsProcessingUtils.compatibleVectorTileLayers = staticmethod(QgsProcessingUtils.compatibleVectorTileLayers)
     QgsProcessingUtils.compatibleTiledSceneLayers = staticmethod(QgsProcessingUtils.compatibleTiledSceneLayers)
     QgsProcessingUtils.compatibleLayers = staticmethod(QgsProcessingUtils.compatibleLayers)
+    QgsProcessingUtils.listLayersFromPreviousRun = staticmethod(QgsProcessingUtils.listLayersFromPreviousRun)
     QgsProcessingUtils.encodeProviderKeyAndUri = staticmethod(QgsProcessingUtils.encodeProviderKeyAndUri)
     QgsProcessingUtils.decodeProviderKeyAndUri = staticmethod(QgsProcessingUtils.decodeProviderKeyAndUri)
     QgsProcessingUtils.mapLayerFromString = staticmethod(QgsProcessingUtils.mapLayerFromString)
