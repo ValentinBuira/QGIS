@@ -33,12 +33,13 @@ from qgis.core import (
     QgsReferencedRectangle,
     QgsCoordinateReferenceSystem,
     QgsProcessingUtils,
+    QgsProcessingParameters,
     QgsProcessingParameterNumber,
     QgsProcessingParameterDefinition,
     QgsFieldProxyModel,
     QgsVectorLayer,
 )
-from qgis.gui import QgsDoubleSpinBox
+from qgis.gui import QgsDoubleSpinBox, QgsAbstractProcessingParameterWidgetWrapper
 from qgis.analysis import QgsInterpolator
 
 from processing.gui.wrappers import WidgetWrapper, DIALOG_STANDARD
@@ -49,8 +50,9 @@ pluginPath = os.path.dirname(__file__)
 
 class ParameterInterpolationData(QgsProcessingParameterDefinition):
 
-    def __init__(self, name="", description=""):
+    def __init__(self, name="", description="", parentInputLayersParameterName=None):
         super().__init__(name, description)
+        self.parentInputLayersParameterName = parentInputLayersParameterName
         self.setMetadata(
             {
                 "widget_wrapper": "processing.algs.qgis.ui.InterpolationWidgets.InterpolationDataWidgetWrapper"
@@ -108,6 +110,27 @@ class InterpolationDataWidget(BASE, WIDGET):
 
         self.layerChanged(self.cmbLayers.currentLayer())
 
+    def setLayers(self, data):
+        print("value changed true", data)
+        print("type data", type(data))
+
+        self.listCurrentLayers()
+
+        for layer in data:
+            print(layer, type(layer))
+
+    def listCurrentLayers(self) -> list[str]:
+        layers = []
+        for i in range(self.layersTree.topLevelItemCount()):
+            item = self.layersTree.topLevelItem(i)
+            if not item:
+                continue
+
+            layerName = item.text(0)
+            layers.append(layerName)
+
+        return layers
+
     def addLayer(self):
         layer = self.cmbLayers.currentLayer()
 
@@ -154,6 +177,7 @@ class InterpolationDataWidget(BASE, WIDGET):
         comboBox.addItem(self.tr("Structure lines"))
         comboBox.addItem(self.tr("Break lines"))
         comboBox.setCurrentIndex(0)
+        # comboBox.setItemCheckState(0, Qt.CheckState.Checked)
         self.layersTree.setItemWidget(item, 2, comboBox)
 
     def setValue(self, value: str):
@@ -185,38 +209,38 @@ class InterpolationDataWidget(BASE, WIDGET):
         context = dataobjects.createContext()
         for i in range(self.layersTree.topLevelItemCount()):
             item = self.layersTree.topLevelItem(i)
-            if item:
-                layerName = item.text(0)
-                layer = QgsProcessingUtils.mapLayerFromString(layerName, context)
-                if not layer:
-                    continue
+            if not item:
+                continue
 
-                provider = layer.dataProvider()
-                if not provider:
-                    continue
+            layerName = item.text(0)
+            layer = QgsProcessingUtils.mapLayerFromString(layerName, context)
+            if not layer:
+                continue
 
-                interpolationAttribute = item.text(1)
-                interpolationSource = QgsInterpolator.ValueSource.Attribute
-                if interpolationAttribute == "Z_COORD":
-                    interpolationSource = QgsInterpolator.ValueSource.Z
-                    fieldIndex = -1
-                else:
-                    fieldIndex = layer.fields().indexFromName(interpolationAttribute)
+            provider = layer.dataProvider()
+            if not provider:
+                continue
 
-                comboBox = self.layersTree.itemWidget(
-                    self.layersTree.topLevelItem(i), 2
-                )
-                inputTypeName = comboBox.currentText()
-                if inputTypeName == self.tr("Points"):
-                    inputType = QgsInterpolator.SourceType.Points
-                elif inputTypeName == self.tr("Structure lines"):
-                    inputType = QgsInterpolator.SourceType.StructureLines
-                else:
-                    inputType = QgsInterpolator.SourceType.BreakLines
+            interpolationAttribute = item.text(1)
+            interpolationSource = QgsInterpolator.ValueSource.Attribute
+            if interpolationAttribute == "Z_COORD":
+                interpolationSource = QgsInterpolator.ValueSource.Z
+                fieldIndex = -1
+            else:
+                fieldIndex = layer.fields().indexFromName(interpolationAttribute)
 
-                layers += "{}::~::{:d}::~::{:d}::~::{:d}::|::".format(
-                    layer.source(), interpolationSource, fieldIndex, inputType
-                )
+            comboBox = self.layersTree.itemWidget(self.layersTree.topLevelItem(i), 2)
+            inputTypeName = comboBox.currentText()
+            if inputTypeName == self.tr("Points"):
+                inputType = QgsInterpolator.SourceType.Points
+            elif inputTypeName == self.tr("Structure lines"):
+                inputType = QgsInterpolator.SourceType.StructureLines
+            else:
+                inputType = QgsInterpolator.SourceType.BreakLines
+
+            layers += "{}::~::{:d}::~::{:d}::~::{:d}::|::".format(
+                layer.source(), interpolationSource, fieldIndex, inputType
+            )
         return layers[: -len("::|::")]
 
 
@@ -232,6 +256,41 @@ class InterpolationDataWidgetWrapper(WidgetWrapper):
 
     def value(self):
         return self.widget.value()
+
+    def postInitialize(self, wrappers):
+        for wrapper in wrappers:
+            if (
+                wrapper.parameterDefinition().name()
+                == self.parameterDefinition().parentInputLayersParameterName
+            ):
+                wrapper.widgetValueHasChanged.connect(self.setLayers)
+                break
+
+    def setLayers(self, wrapper: QgsAbstractProcessingParameterWidgetWrapper):
+        QgsProcessingParameters.parameterAsLayerList(
+            wrapper.parameterDefinition(), wrapper.parameterValue()
+        )
+
+        # # evaluate value to layer
+        # QgsProcessingContext *context = nullptr;
+        # std::unique_ptr<QgsProcessingContext> tmpContext;
+        # if ( mProcessingContextGenerator )
+        #     context = mProcessingContextGenerator->processingContext();
+
+        # if ( !context )
+        # {
+        #     tmpContext = std::make_unique<QgsProcessingContext>();
+        #     context = tmpContext.get();
+        # }
+
+        # QgsVectorLayer *layer = QgsProcessingParameters::parameterAsVectorLayer( parentWrapper->parameterDefinition(), parentWrapper->parameterValue(), *context );
+        # if ( !layer )
+        # {
+        #     if ( mPanel )
+        #     mPanel->setLayer( nullptr );
+        #     return;
+
+        self.widget.setLayers(wrapper.parameterValue())
 
 
 class ParameterPixelSize(QgsProcessingParameterNumber):

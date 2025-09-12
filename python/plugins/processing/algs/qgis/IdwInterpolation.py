@@ -30,6 +30,7 @@ from qgis.core import (
     QgsProcessingParameterNumber,
     QgsProcessingParameterExtent,
     QgsProcessingParameterDefinition,
+    QgsProcessingParameterMultipleLayers,
     QgsProcessingParameterRasterDestination,
     QgsProcessingException,
 )
@@ -45,6 +46,7 @@ pluginPath = os.path.split(os.path.split(os.path.dirname(__file__))[0])[0]
 
 
 class IdwInterpolation(QgisAlgorithm):
+    INPUT_LAYERS = "INPUT_LAYERS"
     INTERPOLATION_DATA = "INTERPOLATION_DATA"
     DISTANCE_COEFFICIENT = "DISTANCE_COEFFICIENT"
     PIXEL_SIZE = "PIXEL_SIZE"
@@ -68,8 +70,18 @@ class IdwInterpolation(QgisAlgorithm):
     def initAlgorithm(self, config=None):
 
         self.addParameter(
+            QgsProcessingParameterMultipleLayers(
+                name=self.INPUT_LAYERS,
+                description=self.tr("Input layer(s)"),
+                optional=False,
+            )
+        )
+
+        self.addParameter(
             ParameterInterpolationData(
-                self.INTERPOLATION_DATA, self.tr("Input layer(s)")
+                self.INTERPOLATION_DATA,
+                self.tr("Interpolation data"),
+                self.INPUT_LAYERS,
             )
         )
         self.addParameter(
