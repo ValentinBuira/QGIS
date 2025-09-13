@@ -843,6 +843,7 @@ void QgsLayout::writeXmlLayoutSettings( QDomElement &element, QDomDocument &docu
   element.setAttribute( QStringLiteral( "units" ), QgsUnitTypes::encodeUnit( mUnits ) );
   element.setAttribute( QStringLiteral( "worldFileMap" ), mWorldFileMapId );
   element.setAttribute( QStringLiteral( "printResolution" ), mRenderContext->dpi() );
+  element.setAttribute( QStringLiteral( "firstOpen" ), mFirstOpen );
 }
 
 QDomElement QgsLayout::writeXml( QDomDocument &document, const QgsReadWriteContext &context ) const
@@ -886,6 +887,8 @@ bool QgsLayout::readXmlLayoutSettings( const QDomElement &layoutElement, const Q
   setUnits( QgsUnitTypes::decodeLayoutUnit( layoutElement.attribute( QStringLiteral( "units" ) ) ) );
   mWorldFileMapId = layoutElement.attribute( QStringLiteral( "worldFileMap" ) );
   mRenderContext->setDpi( layoutElement.attribute( QStringLiteral( "printResolution" ), QStringLiteral( "300" ) ).toDouble() );
+  mFirstOpen = layoutElement.attribute( QStringLiteral( "firstOpen" ), QStringLiteral( "0" ) ).toInt();
+
   emit changed();
 
   return true;
@@ -1234,4 +1237,16 @@ void QgsLayout::itemBackgroundTaskCountChanged( int count )
   }
 
   emit backgroundTaskCountChanged( total );
+}
+
+bool QgsLayout::firstOpen() const
+{
+  return mFirstOpen;
+}
+
+void QgsLayout::setFirstOpen( bool firstOpen )
+{
+  Q_ASSERT( firstOpen == false );
+
+  mFirstOpen = firstOpen;
 }

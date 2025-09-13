@@ -663,6 +663,25 @@ class CORE_EXPORT QgsLayout : public QGraphicsScene, public QgsExpressionContext
     static const QgsSettingsEntryStringList *settingsSearchPathForTemplates;
 #endif
 
+
+    /**
+     * Returns whether the layout has been opened in the layout designer dialog once or not
+     * returns true on the first open, and false for the rest of the lifetime of the layout
+     * \see setFirstOpen()
+     *
+     * \since QGIS 4.0
+     */
+    bool firstOpen() const;
+
+    /**
+     * Sets the new mFirstOpen flag to false
+     *
+     * \arg firstOpen only accept false because we basically never want to set this flag to true again
+     *
+     * \since QGIS 4.0
+     */
+    void setFirstOpen( bool firstOpen = false );
+
   public slots:
 
     /**
@@ -744,6 +763,9 @@ class CORE_EXPORT QgsLayout : public QGraphicsScene, public QgsExpressionContext
 
     //! Item ID for layout map to use for the world file generation
     QString mWorldFileMapId;
+
+    // Flag for layout first open: initialized to true, false otherwise
+    bool mFirstOpen = true;
 
     QHash< QgsLayoutItem *, int > mBackgroundTaskCount;
 

@@ -15,9 +15,12 @@
  *                                                                         *
  ***************************************************************************/
 
+#include "qgslayoutitemguiregistry.h"
+#include "qgslayoutitemscalebar.h"
 #include "qgslayoutview.h"
 #include "qgslayoutframe.h"
 #include "qgslayoutmultiframe.h"
+#include "qgsgui.h"
 #include "qgslayoutviewtool.h"
 #include "qgslayoutviewmouseevent.h"
 #include "qgslayoutviewtooltemporarykeypan.h"
@@ -105,6 +108,37 @@ void QgsLayoutView::setCurrentLayout( QgsLayout *layout )
   mVerticalSnapLine->hide();
   layout->addItem( mVerticalSnapLine );
   mSectionLabel = nullptr;
+
+  if ( layout->firstOpen() )
+  {
+    QgsLayoutSize initialPageSize = layout->pageCollection()->page( 0 )->sizeWithUnits();
+
+    // Create a default map item
+    int itemMapMetadataId = QgsGui::layoutItemGuiRegistry()->metadataIdForItemType( QgsLayoutItemRegistry::LayoutMap );
+    QgsLayoutItem *defaultMapItem = QgsGui::layoutItemGuiRegistry()->createItem( itemMapMetadataId, layout );
+    // Place a default map on the full page by default
+    defaultMapItem->attemptResize( QgsLayoutSize( initialPageSize.width(), initialPageSize.height(), Qgis::LayoutUnit::Millimeters ) );
+    defaultMapItem->attemptMove( QgsLayoutPoint( 0, 0, Qgis::LayoutUnit::Millimeters ) );
+    QgsGui::layoutItemGuiRegistry()->newItemAddedToLayout( itemMapMetadataId, defaultMapItem );
+    layout->addLayoutItem( defaultMapItem );
+
+    // Create a default scale item
+    int itemScaleMetadataId = QgsGui::layoutItemGuiRegistry()->metadataIdForItemType( QgsLayoutItemRegistry::LayoutScaleBar );
+    QgsLayoutItem *defaultScaleItem = QgsGui::layoutItemGuiRegistry()->createItem( itemScaleMetadataId, layout );
+
+    // Place a default scale in the lower left corner
+    defaultScaleItem->setReferencePoint( QgsLayoutItem::ReferencePoint::LowerLeft );
+    defaultScaleItem->attemptMove( QgsLayoutPoint( 5, initialPageSize.height(), Qgis::LayoutUnit::Millimeters ) );
+    QgsGui::layoutItemGuiRegistry()->newItemAddedToLayout( itemScaleMetadataId, defaultScaleItem );
+
+    QgsLayoutItemScaleBar *scalebar = qobject_cast<QgsLayoutItemScaleBar *>( defaultScaleItem );
+    scalebar->setStyle( QStringLiteral( "Line Ticks Middle" ) ); // More discret than the default single box
+
+    layout->addLayoutItem( defaultScaleItem );
+
+    layout->setFirstOpen( false );         // False so it's only executed once per layout
+    layout->undoStack()->stack()->clear(); // addLayoutItem add undostep so clear them
+  }
 
   if ( mHorizontalRuler )
   {
