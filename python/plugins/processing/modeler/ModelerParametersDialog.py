@@ -59,6 +59,7 @@ from qgis.gui import (
     QgsProcessingParameterWidgetContext,
     QgsPanelWidget,
     QgsPanelWidgetStack,
+    QgsCollapsibleGroupBox,
     QgsColorButton,
     QgsModelChildDependenciesWidget,
 )
@@ -225,7 +226,6 @@ class ModelerParametersPanelWidget(QgsPanelWidget):
         self.configuration = configuration
         self.context = context
         self.dialog = dialog
-        self.widget_labels = {}
         self.previous_output_definitions = {}
 
         class ContextGenerator(QgsProcessingContextGenerator):
@@ -295,15 +295,16 @@ class ModelerParametersPanelWidget(QgsPanelWidget):
                 self.algorithmItem.setConfiguration(self.configuration)
             self.verticalLayout.addWidget(self.algorithmItem)
 
+        self.grpAdvanced = QgsCollapsibleGroupBox(self.tr("Advanced Parameters"))
+        self.grpAdvancedVLayout = QVBoxLayout()
+        self.grpAdvanced.setLayout(self.grpAdvancedVLayout)
+        self.grpAdvanced.hide()
+
+        self.verticalLayout.addWidget(self.grpAdvanced)
+
         for param in self._alg.parameterDefinitions():
             if param.flags() & QgsProcessingParameterDefinition.Flag.FlagAdvanced:
-                self.advancedButton = QPushButton()
-                self.advancedButton.setText(self.tr("Show advanced parameters"))
-                self.advancedButton.clicked.connect(self.showAdvancedParametersClicked)
-                advancedButtonHLayout = QHBoxLayout()
-                advancedButtonHLayout.addWidget(self.advancedButton)
-                advancedButtonHLayout.addStretch()
-                self.verticalLayout.addLayout(advancedButtonHLayout)
+                self.grpAdvanced.show()
                 break
         for param in self._alg.parameterDefinitions():
             if (
@@ -328,14 +329,18 @@ class ModelerParametersPanelWidget(QgsPanelWidget):
                     tooltip = param.description()
                     widget.setToolTip(tooltip)
                     label = wrapper.label
-                self.widget_labels[param.name()] = label
 
                 if param.flags() & QgsProcessingParameterDefinition.Flag.FlagAdvanced:
-                    label.setVisible(self.showAdvanced)
-                    widget.setVisible(self.showAdvanced)
-
-                self.verticalLayout.addWidget(label)
-                self.verticalLayout.addWidget(widget)
+                    self.grpAdvancedVLayout.addWidget(label)
+                    self.grpAdvancedVLayout.addWidget(widget)
+                else:
+                    # Regular parameters
+                    self.verticalLayout.insertWidget(
+                        self.verticalLayout.count() - 1, label
+                    )
+                    self.verticalLayout.insertWidget(
+                        self.verticalLayout.count() - 1, widget
+                    )
 
         for output in self._alg.destinationParameterDefinitions():
             if output.flags() & QgsProcessingParameterDefinition.Flag.FlagHidden:
@@ -390,22 +395,6 @@ class ModelerParametersPanelWidget(QgsPanelWidget):
         w.setLayout(self.verticalLayout2)
         self.mainLayout.addWidget(w)
         self.setLayout(self.mainLayout)
-
-    def showAdvancedParametersClicked(self):
-        self.showAdvanced = not self.showAdvanced
-        if self.showAdvanced:
-            self.advancedButton.setText(self.tr("Hide advanced parameters"))
-        else:
-            self.advancedButton.setText(self.tr("Show advanced parameters"))
-        for param in self._alg.parameterDefinitions():
-            if param.flags() & QgsProcessingParameterDefinition.Flag.FlagAdvanced:
-                wrapper = self.wrappers[param.name()]
-                if issubclass(wrapper.__class__, QgsProcessingModelerParameterWidget):
-                    wrapper.setVisible(self.showAdvanced)
-                else:
-                    wrapper.widget.setVisible(self.showAdvanced)
-
-                self.widget_labels[param.name()].setVisible(self.showAdvanced)
 
     def setPreviousValues(self):
         if self.childId is not None:
