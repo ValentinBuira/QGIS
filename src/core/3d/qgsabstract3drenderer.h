@@ -46,6 +46,23 @@ namespace Qt3DCore
  */
 class CORE_EXPORT QgsAbstract3DRenderer SIP_ABSTRACT
 {
+
+#ifdef SIP_RUN
+    SIP_CONVERT_TO_SUBCLASS_CODE
+    const QString type = sipCpp->type();
+    if ( type == QLatin1String( "vector" ) )
+      sipType = sipType_QgsVectorLayer3DRenderer;
+    else if ( type == QLatin1String( "rulebased" ) )
+      sipType = sipType_QgsRuleBased3DRenderer;
+    else if ( type == QLatin1String( "pointcloud" ) )
+      sipType = sipType_QgsPointCloudLayer3DRenderer;
+    else if ( sipCpp->type() == QLatin1String( "tiledscene" ) )
+      sipType = sipType_QgsTiledSceneLayer3DRenderer;
+    else
+      sipType = 0;
+    SIP_END
+#endif
+
   public:
     virtual ~QgsAbstract3DRenderer() = default;
 

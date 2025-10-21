@@ -28,6 +28,19 @@ store large amount of data within a renderer (e.g. arrays of vertices).
 %TypeHeaderCode
 #include "qgsabstract3drenderer.h"
 %End
+%ConvertToSubClassCode
+    const QString type = sipCpp->type();
+    if ( type == QLatin1String( "vector" ) )
+      sipType = sipType_QgsVectorLayer3DRenderer;
+    else if ( type == QLatin1String( "rulebased" ) )
+      sipType = sipType_QgsRuleBased3DRenderer;
+    else if ( type == QLatin1String( "pointcloud" ) )
+      sipType = sipType_QgsPointCloudLayer3DRenderer;
+    else if ( sipCpp->type() == QLatin1String( "tiledscene" ) )
+      sipType = sipType_QgsTiledSceneLayer3DRenderer;
+    else
+      sipType = 0;
+%End
   public:
     virtual ~QgsAbstract3DRenderer();
 
