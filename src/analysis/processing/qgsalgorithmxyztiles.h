@@ -92,7 +92,6 @@ class QgsXyzTilesBaseAlgorithm : public QgsProcessingAlgorithm
     Qgis::ProcessingAlgorithmFlags flags() const override;
 
   protected:
-
     /**
      * Creates common parameters used in all algorithms
      */

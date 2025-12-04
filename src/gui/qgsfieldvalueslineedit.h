@@ -103,7 +103,6 @@ class GUI_EXPORT QgsFieldValuesLineEdit : public QgsFilterLineEdit
     Q_PROPERTY( int attributeIndex READ attributeIndex WRITE setAttributeIndex NOTIFY attributeIndexChanged )
 
   public:
-
     /**
      * Constructor for QgsFieldValuesLineEdit
      * \param parent parent widget

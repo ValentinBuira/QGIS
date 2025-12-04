@@ -54,7 +54,6 @@ class QgsGrassModuleCheckBox : public QCheckBox
     Q_OBJECT
 
   public:
-
     /**
      * \brief Constructor
      */
@@ -83,7 +82,6 @@ class QgsGrassModuleCheckBox : public QCheckBox
 class QgsGrassModuleParam
 {
   public:
-
     /**
      * \brief Constructor
      * \param qdesc option element in QGIS module description XML file
@@ -177,7 +175,6 @@ class QgsGrassModuleGroupBoxItem : public QGroupBox, public QgsGrassModuleParam
     Q_OBJECT
 
   public:
-
     /**
      * \brief Constructor
      * \param qdesc option element in QGIS module description XML file
@@ -241,7 +238,6 @@ class QgsGrassModuleOption : public QgsGrassModuleMultiParam
     Q_OBJECT
 
   public:
-
     /**
      * \brief Constructor
      * \param qdesc option element in QGIS module description XML file
@@ -361,7 +357,6 @@ class QgsGrassModuleFlag : public QgsGrassModuleCheckBox, public QgsGrassModuleP
     Q_OBJECT
 
   public:
-
     /**
      * \brief Constructor
      * \param qdesc option element in QGIS module description XML file
@@ -445,7 +440,6 @@ class QgsGrassModuleField : public QgsGrassModuleOption
     Q_OBJECT
 
   public:
-
     /**
      * \brief Constructor
      * \param qdesc option element in QGIS module description XML file
@@ -465,7 +459,6 @@ class QgsGrassModuleVectorField : public QgsGrassModuleMultiParam
     Q_OBJECT
 
   public:
-
     /**
      * \brief Constructor
      * \param qdesc option element in QGIS module description XML file
@@ -585,7 +578,6 @@ class QgsGrassModuleFile : public QgsGrassModuleGroupBoxItem
     Q_OBJECT
 
   public:
-
     /**
      * \brief Constructor
      * \param qdesc option element in QGIS module description XML file

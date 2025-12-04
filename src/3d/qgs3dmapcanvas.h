@@ -251,7 +251,6 @@ class _3D_EXPORT Qgs3DMapCanvas : public QWindow
     void updateHighlightSizes();
 
   protected:
-
     /**
      * Manages the display events specified in e.
      */

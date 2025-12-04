@@ -175,7 +175,6 @@ class GUI_EXPORT QgsPalettedRendererWidget : public QgsRasterRendererWidget, pri
     Q_OBJECT
 
   public:
-
     /**
      * Constructor for QgsSingleBandPseudoColorRendererWidget.
      * \param layer associated raster layer

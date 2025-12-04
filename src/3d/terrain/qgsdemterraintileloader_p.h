@@ -82,7 +82,6 @@ class QgsDemHeightMapGenerator : public QObject
 {
     Q_OBJECT
   public:
-
     /**
      * Constructs height map generator based on a raster layer with elevation model,
      * terrain's tiling scheme and height map resolution (number of height values on each side of tile)

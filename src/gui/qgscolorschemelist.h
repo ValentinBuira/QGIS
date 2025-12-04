@@ -69,7 +69,6 @@ class GUI_EXPORT QgsColorSchemeModel : public QAbstractItemModel
     Q_OBJECT
 
   public:
-
     /**
      * Constructor
      * \param scheme color scheme for list
@@ -162,7 +161,6 @@ class GUI_EXPORT QgsColorSchemeList : public QTreeView
     Q_OBJECT
 
   public:
-
     /**
      * Construct a new color swatch grid.
      * \param parent parent widget

@@ -39,7 +39,6 @@ class GUI_EXPORT QgsModelDesignerFlatButtonGraphicItem : public QGraphicsObject
 {
     Q_OBJECT
   public:
-
     /**
      * Constructor for QgsModelDesignerFlatButtonGraphicItem, with the specified \a parent item.
      *
@@ -96,7 +95,6 @@ class GUI_EXPORT QgsModelDesignerFlatButtonGraphicItem : public QGraphicsObject
     void clicked();
 
   protected:
-
     /**
      * Sets the \a picture to render for the button graphics.
      */
@@ -120,7 +118,6 @@ class GUI_EXPORT QgsModelDesignerFoldButtonGraphicItem : public QgsModelDesigner
 {
     Q_OBJECT
   public:
-
     /**
      * Constructor for QgsModelDesignerFoldButtonGraphicItem, with the specified \a parent item.
      *
@@ -162,7 +159,6 @@ class GUI_EXPORT QgsModelDesignerSocketGraphicItem : public QgsModelDesignerFlat
 {
     Q_OBJECT
   public:
-
     /**
      * Constructor for QgsModelDesignerSocketGraphicItem, with the specified \a parent item.
      *

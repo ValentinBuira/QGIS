@@ -40,7 +40,6 @@ class GUI_EXPORT QgsStackedWidget : public QStackedWidget
     Q_OBJECT
 
   public:
-
     /**
      * Possible modes for calculating a QgsStackedWidget's size
      */
