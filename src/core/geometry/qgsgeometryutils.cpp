@@ -15,27 +15,25 @@ email                : marco.hugentobler at sourcepole dot com
 
 #include "qgsgeometryutils.h"
 
-#include "qgscurve.h"
-#include "qgscurvepolygon.h"
-#include "qgsgeometrycollection.h"
 #include <limits>
-#include "qgslinestring.h"
-#include "qgswkbptr.h"
+#include <memory>
+#include <nlohmann/json.hpp>
 
-#include "qgspoint.h"
-#include "qgslinestring.h"
+#include "qgsabstractgeometry.h"
 #include "qgscircularstring.h"
 #include "qgscompoundcurve.h"
 #include "qgscurve.h"
-#include "qgsabstractgeometry.h"
-#include "qgsvertexid.h"
+#include "qgscurvepolygon.h"
+#include "qgsgeometrycollection.h"
+#include "qgslinestring.h"
 #include "qgslogger.h"
+#include "qgspoint.h"
+#include "qgsvertexid.h"
+#include "qgswkbptr.h"
 
-#include <memory>
+#include <QRegularExpression>
 #include <QStringList>
 #include <QVector>
-#include <QRegularExpression>
-#include <nlohmann/json.hpp>
 
 QVector<QgsLineString *> QgsGeometryUtils::extractLineStrings( const QgsAbstractGeometry *geom )
 {
@@ -1466,7 +1464,7 @@ std::unique_ptr<QgsAbstractGeometry> QgsGeometryUtils::createFilletGeometry(
 
     // Calculate appropriate tolerance based on desired number of segments
     // For segments > 0: use angle tolerance = 2*PI / (4 * segments) to get approximately 'segments' segments for a quarter circle
-    const double angleTolerance = segments > 0 ? ( 2.0 * M_PI ) / ( 4.0 * segments ) : M_PI / 180.0; // Default to 1 degree
+    const double angleTolerance = ( 2.0 * M_PI ) / ( 4.0 * segments );
 
     std::unique_ptr<QgsLineString> segmentizedArc( tempArc.curveToLine( angleTolerance, QgsAbstractGeometry::MaximumAngle ) );
 

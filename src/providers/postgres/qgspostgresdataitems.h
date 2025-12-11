@@ -15,19 +15,18 @@
 #ifndef QGSPOSTGRESDATAITEMS_H
 #define QGSPOSTGRESDATAITEMS_H
 
-#include <QMainWindow>
-
 #include "qgsconnectionsitem.h"
+#include "qgsdatabaseschemaitem.h"
 #include "qgsdatacollectionitem.h"
 #include "qgsdataitemprovider.h"
-#include "qgsdatabaseschemaitem.h"
 #include "qgslayeritem.h"
-
-#include "qgspostgresconn.h"
 #include "qgsmimedatautils.h"
-#include "qgswkbtypes.h"
+#include "qgspostgresconn.h"
 #include "qgspostgresprojectstorage.h"
 #include "qgsprojectitem.h"
+#include "qgswkbtypes.h"
+
+#include <QMainWindow>
 
 class QgsPGRootItem;
 class QgsPGConnectionItem;
@@ -129,7 +128,7 @@ class QgsPGProjectItem : public QgsProjectItem
 {
     Q_OBJECT
   public:
-    QgsPGProjectItem( QgsDataItem *parent, const QString name, const QgsPostgresProjectUri postgresProjectUri, const QString &connectionName );
+    QgsPGProjectItem( QgsDataItem *parent, const QString name, const QgsPostgresProjectUri &postgresProjectUri, const QString &connectionName );
 
     QString schemaName() const { return mProjectUri.schemaName; }
     QgsPostgresProjectUri postgresProjectUri() const { return mProjectUri; }
