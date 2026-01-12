@@ -35,7 +35,7 @@
 
 #include "moc_qgsmaptoolshapecircle2tangentspoint.cpp"
 
-const QString QgsMapToolShapeCircle2TangentsPointMetadata::TOOL_ID = QStringLiteral( "circle-from-2-tangents-1-point" );
+const QString QgsMapToolShapeCircle2TangentsPointMetadata::TOOL_ID = u"circle-from-2-tangents-1-point"_s;
 
 QString QgsMapToolShapeCircle2TangentsPointMetadata::id() const
 {
@@ -49,7 +49,7 @@ QString QgsMapToolShapeCircle2TangentsPointMetadata::name() const
 
 QIcon QgsMapToolShapeCircle2TangentsPointMetadata::icon() const
 {
-  return QgsApplication::getThemeIcon( QStringLiteral( "/mActionCircle2TangentsPoint.svg" ) );
+  return QgsApplication::getThemeIcon( u"/mActionCircle2TangentsPoint.svg"_s );
 }
 
 QgsMapToolShapeAbstract::ShapeCategory QgsMapToolShapeCircle2TangentsPointMetadata::category() const
@@ -144,8 +144,7 @@ void QgsMapToolShapeCircle2TangentsPoint::cadCanvasMoveEvent( QgsMapMouseEvent *
       mTempRubberBand->show();
     }
   }
-
-  if ( mPoints.size() == 4 && !mCenters.isEmpty() )
+  else if ( mPoints.size() == 4 && !mCenters.isEmpty() )
   {
     QgsPoint center = QgsPoint( mCenters.at( 0 ) );
     const double currentDist = mapPoint.distanceSquared( center );
@@ -157,7 +156,12 @@ void QgsMapToolShapeCircle2TangentsPoint::cadCanvasMoveEvent( QgsMapMouseEvent *
     }
 
     mCircle = QgsCircle( center, mRadius );
-    mTempRubberBand->setGeometry( mCircle.toCircularString( true ) );
+    const QgsGeometry newGeometry( mCircle.toCircularString( true ) );
+    if ( !newGeometry.isEmpty() )
+    {
+      mTempRubberBand->setGeometry( newGeometry.constGet()->clone() );
+      setTransientGeometry( newGeometry );
+    }
   }
 }
 

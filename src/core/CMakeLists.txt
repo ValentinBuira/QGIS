@@ -480,6 +480,7 @@ set(QGIS_CORE_SRCS
   qgsfeaturesource.cpp
   qgsfeaturestore.cpp
   qgsfeaturefiltermodel.cpp
+  qgsfeedback.cpp
   qgsfield.cpp
   qgsfieldconstraints.cpp
   qgsfieldformatter.cpp
@@ -515,6 +516,7 @@ set(QGIS_CORE_SRCS
   qgslocalec.cpp
   qgslocalizeddatapathregistry.cpp
   qgslogger.cpp
+  qgsmagneticmodel.cpp
   qgsmapclippingregion.cpp
   qgsmapclippingutils.cpp
   qgsmapdecoration.cpp
@@ -625,6 +627,7 @@ set(QGIS_CORE_SRCS
   qgstrackedvectorlayertools.cpp
   qgstransaction.cpp
   qgstransactiongroup.cpp
+  qgsunaccentrules.cpp
   qgsunittypes.cpp
   qgsvariantutils.cpp
   qgsvector.cpp
@@ -642,6 +645,10 @@ set(QGIS_CORE_SRCS
   qgstestutils.cpp
   qgsziputils.cpp
   qgswmsutils.cpp
+
+  auth/qgsauthmanager.cpp
+  auth/qgsauthorizationsettings.cpp
+
 
   browser/qgsbrowsermodel.cpp
   browser/qgsbrowserproxymodel.cpp
@@ -1227,6 +1234,7 @@ set(QGIS_CORE_HDRS
   qgslocalec.h
   qgslocalizeddatapathregistry.h
   qgslogger.h
+  qgsmagneticmodel.h
   qgsmapclippingregion.h
   qgsmapclippingutils.h
   qgsmapdecoration.h
@@ -1363,6 +1371,7 @@ set(QGIS_CORE_HDRS
   qgsvirtuallayertask.h
   qgswebpage.h
   qgswebview.h
+  qgswebframe.h
   qgswmsutils.h
   qgsxmlutils.h
   qgsziputils.h
@@ -1400,6 +1409,9 @@ set(QGIS_CORE_HDRS
   annotations/qgsrenderedannotationitemdetails.h
   annotations/qgssvgannotation.h
   annotations/qgstextannotation.h
+
+  auth/qgsauthmanager.h
+  auth/qgsauthorizationsettings.h
 
   browser/qgsbrowsermodel.h
   browser/qgsbrowserproxymodel.h
@@ -2001,6 +2013,7 @@ set(QGIS_CORE_HDRS
   stac/qgsstacparser.h
   stac/qgsstacprovider.h
 
+  symbology/line_p.h
   symbology/qgs25drenderer.h
   symbology/qgsarrowsymbollayer.h
 
@@ -2161,6 +2174,17 @@ set(QGIS_CORE_HDRS
   vectortile/qgsxyzvectortiledataprovider.h
 )
 
+set(QPDF_COMPILE_OPTIONS)
+if(HAVE_WFLAG_SUGGEST_OVERRIDE)
+  list(APPEND QPDF_COMPILE_OPTIONS "-Wno-suggest-override")
+endif()
+if(HAVE_WFLAG_SUGGEST_DESTRUCTOR_OVERRIDE)
+  list(APPEND QPDF_COMPILE_OPTIONS "-Wno-suggest-destructor-override")
+endif()
+if (QPDF_COMPILE_OPTIONS)
+  set_source_files_properties(pdf/qgspdfrenderer.cpp PROPERTIES COMPILE_OPTIONS "${QPDF_COMPILE_OPTIONS}")
+endif()
+
 if(WITH_AUTH)
   set(QGIS_CORE_SRCS ${QGIS_CORE_SRCS}
     auth/qgsauthcertutils.cpp
@@ -2168,11 +2192,9 @@ if(WITH_AUTH)
     auth/qgsauthcrypto.cpp
     auth/qgsauthconfigurationstorage.cpp
     auth/qgsauthconfigurationstorageregistry.cpp
-    auth/qgsauthmanager.cpp
     auth/qgsauthmethod.cpp
     auth/qgsauthmethodmetadata.cpp
     auth/qgsauthmethodregistry.cpp
-    auth/qgsauthorizationsettings.cpp
 
     auth/qgsauthconfigurationstoragesqlite.cpp
     auth/qgsauthconfigurationstoragedb.cpp
@@ -2184,11 +2206,9 @@ if(WITH_AUTH)
     auth/qgsauthcrypto.h
     auth/qgsauthconfigurationstorage.h
     auth/qgsauthconfigurationstorageregistry.h
-    auth/qgsauthmanager.h
     auth/qgsauthmethod.h
     auth/qgsauthmethodmetadata.h
     auth/qgsauthmethodregistry.h
-    auth/qgsauthorizationsettings.h
 
     auth/qgsauthconfigurationstoragesqlite.h
     auth/qgsauthconfigurationstoragedb.h
@@ -2224,12 +2244,6 @@ set(QGIS_CORE_PRIVATE_HDRS
 
   textrenderer/qgstextrenderer_p.h
 )
-
-if (NOT WITH_QTWEBKIT)
-  set(QGIS_CORE_HDRS ${QGIS_CORE_HDRS}
-    qgswebframe.h
-  )
-endif()
 
 if (HAVE_WEBENGINE)
     set(QGIS_CORE_SRCS ${QGIS_CORE_SRCS}
@@ -2344,7 +2358,7 @@ if (WITH_EPT OR WITH_COPC)
       ${CMAKE_SOURCE_DIR}/external/lazperf/
     )
 
-    set(QGIS_CORE_SRCS ${QGIS_CORE_SRCS}
+    set(LAZPERF_SRCS
       ${CMAKE_SOURCE_DIR}/external/lazperf/lazperf/charbuf.cpp
       ${CMAKE_SOURCE_DIR}/external/lazperf/lazperf/filestream.cpp
       ${CMAKE_SOURCE_DIR}/external/lazperf/lazperf/header.cpp
@@ -2361,6 +2375,20 @@ if (WITH_EPT OR WITH_COPC)
       ${CMAKE_SOURCE_DIR}/external/lazperf/lazperf/detail/field_rgb10.cpp
       ${CMAKE_SOURCE_DIR}/external/lazperf/lazperf/detail/field_rgb14.cpp
     )
+
+    set(QGIS_CORE_SRCS ${QGIS_CORE_SRCS} ${LAZPERF_SRCS})
+
+    set(LAZPERF_COMPILE_OPTIONS)
+    if(HAVE_WFLAG_SUGGEST_OVERRIDE)
+      list(APPEND LAZPERF_COMPILE_OPTIONS "-Wno-suggest-override")
+    endif()
+    if(HAVE_WFLAG_SUGGEST_DESTRUCTOR_OVERRIDE)
+      list(APPEND LAZPERF_COMPILE_OPTIONS "-Wno-suggest-destructor-override")
+    endif()
+    if (LAZPERF_COMPILE_OPTIONS)
+      set_source_files_properties(${LAZPERF_SRCS} PROPERTIES COMPILE_OPTIONS "${LAZPERF_COMPILE_OPTIONS}")
+    endif()
+
   endif()
 
   set(QGIS_CORE_SRCS ${QGIS_CORE_SRCS}
@@ -2434,8 +2462,19 @@ if(WITH_INTERNAL_SPATIALINDEX)
   check_function_exists(memcpy HAVE_MEMCPY)
   check_function_exists(bcopy HAVE_BCOPY)
 
+  set(SIDX_COMPILE_OPTIONS)
   if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-    set_source_files_properties(${SIDX_SRCS} PROPERTIES COMPILE_OPTIONS "-Wno-type-limits;-Wno-extra;-Wno-overloaded-virtual")
+    list(APPEND SIDX_COMPILE_OPTIONS "-Wno-type-limits" "-Wno-extra" "-Wno-overloaded-virtual")
+  endif()
+
+  if(HAVE_WFLAG_SUGGEST_OVERRIDE)
+    list(APPEND SIDX_COMPILE_OPTIONS "-Wno-suggest-override")
+  endif()
+  if(HAVE_WFLAG_SUGGEST_DESTRUCTOR_OVERRIDE)
+    list(APPEND SIDX_COMPILE_OPTIONS "-Wno-suggest-destructor-override")
+  endif()
+  if (SIDX_COMPILE_OPTIONS)
+    set_source_files_properties(${SIDX_SRCS} PROPERTIES COMPILE_OPTIONS "${SIDX_COMPILE_OPTIONS}")
   endif()
 
   if(HAVE_SRAND48)
@@ -2617,6 +2656,7 @@ target_include_directories(qgis_core PUBLIC
   ${CMAKE_SOURCE_DIR}/external/nmea
   ${CMAKE_SOURCE_DIR}/external/rtree/include
   ${CMAKE_SOURCE_DIR}/external/tinygltf
+  ${CMAKE_SOURCE_DIR}/external/earcut
 )
 
 if (WITH_PDF4QT)
@@ -2634,6 +2674,11 @@ if (WITH_COPC)
   target_include_directories(qgis_core PUBLIC
     ${CMAKE_SOURCE_DIR}/src/core/providers/copc
     ${CMAKE_SOURCE_DIR}/src/core/providers/vpc)
+endif()
+
+if (WITH_GEOGRAPHICLIB)
+  target_include_directories(qgis_core PRIVATE
+     ${GeographicLib_INCLUDE_DIR})
 endif()
 
 find_package(${QT_VERSION_BASE} COMPONENTS Multimedia REQUIRED)
@@ -2655,8 +2700,7 @@ if (NOT WITH_INTERNAL_POLY2TRI)
 endif()
 
 if(HAVE_OPENCL)
-  target_link_libraries(qgis_core ${OpenCL_LIBRARY})
-  target_include_directories(qgis_core PUBLIC ${OpenCL_INCLUDE_DIRS})
+  target_link_libraries(qgis_core OpenCL::OpenCL)
 endif()
 
 if(WITH_INTERNAL_NLOHMANN_JSON)
@@ -2696,7 +2740,6 @@ target_link_libraries(qgis_core
   ${QT_VERSION_BASE}::Sql
   ${QT_VERSION_BASE}::Concurrent
   ${QT_VERSION_BASE}::Multimedia
-  ${OPTIONAL_QTWEBKIT}
   GEOS::geos_c
   GDAL::GDAL
   EXPAT::EXPAT
@@ -2730,15 +2773,9 @@ if(NOT WITH_INTERNAL_SPATIALINDEX)
   target_link_libraries(qgis_core ${SPATIALINDEX_LIBRARY})
 endif()
 
-if(BUILD_WITH_QT6)
-  target_link_libraries(qgis_core
-    Qt6Keychain::Qt6Keychain
-  )
-else()
-  target_link_libraries(qgis_core
-    qt5keychain
-  )
-endif()
+target_link_libraries(qgis_core
+  Qt6Keychain::Qt6Keychain
+)
 
 if (WITH_QTPRINTER)
   target_link_libraries(qgis_core ${QT_VERSION_BASE}::PrintSupport)
@@ -2752,9 +2789,7 @@ if (WITH_SPATIALITE)
   target_link_libraries(qgis_core spatialite::spatialite)
 endif()
 
-if (BUILD_WITH_QT6)
-  target_link_libraries(qgis_core Qt6::Core5Compat)
-endif()
+target_link_libraries(qgis_core Qt6::Core5Compat)
 
 if (WITH_EPT)
   target_link_libraries(qgis_core
@@ -2780,18 +2815,16 @@ if (WITH_SFCGAL)
   )
 endif()
 
+if (WITH_GEOGRAPHICLIB)
+  target_link_libraries(qgis_core
+    ${GeographicLib_LIBRARIES}
+  )
+endif()
+
 if (WITH_QTWEBENGINE)
-    if(BUILD_WITH_QT6)
-      target_link_libraries(qgis_core
-        ${QT_VERSION_BASE}::WebEngineCore
-      )
-    else()
-      # QWebEnginePage is in WebEngineWidgets for Qt5
-      target_link_libraries(qgis_core
-        ${QT_VERSION_BASE}::WebEngineCore
-        ${QT_VERSION_BASE}::WebEngineWidgets
-      )
-    endif()
+    target_link_libraries(qgis_core
+      ${QT_VERSION_BASE}::WebEngineCore
+    )
 endif()
 
 if (FORCE_STATIC_LIBS)

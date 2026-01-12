@@ -25,7 +25,7 @@
 
 #include "moc_qgsmaptoolshapeellipseextent.cpp"
 
-const QString QgsMapToolShapeEllipseExtentMetadata::TOOL_ID = QStringLiteral( "ellipse-from-extent" );
+const QString QgsMapToolShapeEllipseExtentMetadata::TOOL_ID = u"ellipse-from-extent"_s;
 
 QString QgsMapToolShapeEllipseExtentMetadata::id() const
 {
@@ -39,7 +39,7 @@ QString QgsMapToolShapeEllipseExtentMetadata::name() const
 
 QIcon QgsMapToolShapeEllipseExtentMetadata::icon() const
 {
-  return QgsApplication::getThemeIcon( QStringLiteral( "/mActionEllipseExtent.svg" ) );
+  return QgsApplication::getThemeIcon( u"/mActionEllipseExtent.svg"_s );
 }
 
 QgsMapToolShapeAbstract::ShapeCategory QgsMapToolShapeEllipseExtentMetadata::category() const
@@ -101,7 +101,12 @@ void QgsMapToolShapeEllipseExtent::cadCanvasMoveEvent( QgsMapMouseEvent *e, QgsM
         if ( qgsDoubleNear( mParentTool->canvas()->rotation(), 0.0 ) )
         {
           mEllipse = QgsEllipse::fromExtent( mPoints.at( 0 ), point );
-          mTempRubberBand->setGeometry( mEllipse.toPolygon( segments() ) );
+          const QgsGeometry newGeometry( mEllipse.toPolygon( segments() ) );
+          if ( !newGeometry.isEmpty() )
+          {
+            mTempRubberBand->setGeometry( newGeometry.constGet()->clone() );
+            setTransientGeometry( newGeometry );
+          }
         }
         else
         {
@@ -109,7 +114,12 @@ void QgsMapToolShapeEllipseExtent::cadCanvasMoveEvent( QgsMapMouseEvent *e, QgsM
           const double angle = mPoints.at( 0 ).azimuth( point );
 
           mEllipse = QgsEllipse::fromExtent( mPoints.at( 0 ), mPoints.at( 0 ).project( dist, angle ) );
-          mTempRubberBand->setGeometry( mEllipse.toPolygon( segments() ) );
+          const QgsGeometry newGeometry( mEllipse.toPolygon( segments() ) );
+          if ( !newGeometry.isEmpty() )
+          {
+            mTempRubberBand->setGeometry( newGeometry.constGet()->clone() );
+            setTransientGeometry( newGeometry );
+          }
         }
       }
       break;

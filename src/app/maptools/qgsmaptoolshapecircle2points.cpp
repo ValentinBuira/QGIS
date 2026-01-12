@@ -35,7 +35,7 @@ QString QgsMapToolShapeCircle2PointsMetadata::name() const
 
 QIcon QgsMapToolShapeCircle2PointsMetadata::icon() const
 {
-  return QgsApplication::getThemeIcon( QStringLiteral( "/mActionCircle2Points.svg" ) );
+  return QgsApplication::getThemeIcon( u"/mActionCircle2Points.svg"_s );
 }
 
 QgsMapToolShapeAbstract::ShapeCategory QgsMapToolShapeCircle2PointsMetadata::category() const
@@ -83,5 +83,10 @@ void QgsMapToolShapeCircle2Points::cadCanvasMoveEvent( QgsMapMouseEvent *e, QgsM
     return;
 
   mCircle = QgsCircle::from2Points( mPoints.at( 0 ), mParentTool->mapPoint( *e ) );
-  mTempRubberBand->setGeometry( mCircle.toCircularString( true ) );
+  const QgsGeometry newGeometry( mCircle.toCircularString( true ) );
+  if ( !newGeometry.isEmpty() )
+  {
+    mTempRubberBand->setGeometry( newGeometry.constGet()->clone() );
+    setTransientGeometry( newGeometry );
+  }
 }

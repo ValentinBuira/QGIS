@@ -24,7 +24,7 @@
 
 #include "moc_qgsmaptoolshapecirclecenterpoint.cpp"
 
-const QString QgsMapToolShapeCircleCenterPointMetadata::TOOL_ID = QStringLiteral( "circle-by-a-center-point-and-another-point" );
+const QString QgsMapToolShapeCircleCenterPointMetadata::TOOL_ID = u"circle-by-a-center-point-and-another-point"_s;
 
 QString QgsMapToolShapeCircleCenterPointMetadata::id() const
 {
@@ -38,7 +38,7 @@ QString QgsMapToolShapeCircleCenterPointMetadata::name() const
 
 QIcon QgsMapToolShapeCircleCenterPointMetadata::icon() const
 {
-  return QgsApplication::getThemeIcon( QStringLiteral( "/mActionCircleCenterPoint.svg" ) );
+  return QgsApplication::getThemeIcon( u"/mActionCircleCenterPoint.svg"_s );
 }
 
 QgsMapToolShapeAbstract::ShapeCategory QgsMapToolShapeCircleCenterPointMetadata::category() const
@@ -89,6 +89,11 @@ void QgsMapToolShapeCircleCenterPoint::cadCanvasMoveEvent( QgsMapMouseEvent *e, 
   if ( mTempRubberBand && !mPoints.isEmpty() )
   {
     mCircle = QgsCircle::fromCenterPoint( mPoints.at( 0 ), point );
-    mTempRubberBand->setGeometry( mCircle.toCircularString( true ) );
+    const QgsGeometry newGeometry( mCircle.toCircularString( true ) );
+    if ( !newGeometry.isEmpty() )
+    {
+      mTempRubberBand->setGeometry( newGeometry.constGet()->clone() );
+      setTransientGeometry( newGeometry );
+    }
   }
 }

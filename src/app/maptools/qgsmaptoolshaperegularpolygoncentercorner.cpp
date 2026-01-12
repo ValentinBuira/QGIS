@@ -24,7 +24,7 @@
 
 #include "moc_qgsmaptoolshaperegularpolygoncentercorner.cpp"
 
-const QString QgsMapToolShapeRegularPolygonCenterCornerMetadata::TOOL_ID = QStringLiteral( "regular-polygon-from-center-and-a-corner" );
+const QString QgsMapToolShapeRegularPolygonCenterCornerMetadata::TOOL_ID = u"regular-polygon-from-center-and-a-corner"_s;
 
 QString QgsMapToolShapeRegularPolygonCenterCornerMetadata::id() const
 {
@@ -38,7 +38,7 @@ QString QgsMapToolShapeRegularPolygonCenterCornerMetadata::name() const
 
 QIcon QgsMapToolShapeRegularPolygonCenterCornerMetadata::icon() const
 {
-  return QgsApplication::getThemeIcon( QStringLiteral( "/mActionRegularPolygonCenterCorner.svg" ) );
+  return QgsApplication::getThemeIcon( u"/mActionRegularPolygonCenterCorner.svg"_s );
 }
 
 QgsMapToolShapeAbstract::ShapeCategory QgsMapToolShapeRegularPolygonCenterCornerMetadata::category() const
@@ -98,6 +98,11 @@ void QgsMapToolShapeRegularPolygonCenterCorner::cadCanvasMoveEvent( QgsMapMouseE
   {
     const QgsRegularPolygon::ConstructionOption option = QgsRegularPolygon::InscribedCircle;
     mRegularPolygon = QgsRegularPolygon( mPoints.at( 0 ), point, mNumberSidesSpinBox->value(), option );
-    mTempRubberBand->setGeometry( mRegularPolygon.toPolygon() );
+    const QgsGeometry newGeometry( mRegularPolygon.toPolygon() );
+    if ( !newGeometry.isEmpty() )
+    {
+      mTempRubberBand->setGeometry( newGeometry.constGet()->clone() );
+      setTransientGeometry( newGeometry );
+    }
   }
 }
