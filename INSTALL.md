@@ -11,7 +11,7 @@ Building QGIS from source - step by step
    * [3.4. Setup ccache (Optional, but recommended)](#34-setup-ccache-optional-but-recommended)
    * [3.5. Prepare your development environment](#35-prepare-your-development-environment)
    * [3.6. Check out the QGIS Source Code](#36-check-out-the-qgis-source-code)
-   * [3.7. Starting the compile](#37-starting-the-compile)
+   * [3.7. Starting the compile](#37-starting-the-compile)ddzdzdzdz
       + [3.7.1 Available compilation flags](#371-available-compilation-flags)
    * [3.8. Building different branches](#38-building-different-branches)
    * [3.9. Building Debian packages](#39-building-debian-packages)
@@ -82,7 +82,7 @@ master branch are available at https://github.com/qgis/QGIS/blob/master/INSTALL.
 If you wish to build another version of QGIS, ensure to checkout the appropriate
 release branch. The QGIS source code can be found [in the repository](https://github.com/qgis/QGIS).
 
-Please visit https://qgis.org for information on joining our mailing lists
+Please visit https://qgis.org for infordddddddddddddddddddddddddddmation on joining our mailing lists
 and getting involved in the project further.
 
 **Note to document writers:** Please use this document as the central
