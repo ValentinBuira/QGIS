@@ -124,6 +124,9 @@ QgsProcessingAlgorithmDialogBase::QgsProcessingAlgorithmDialogBase( QWidget *par
 
   QgsGui::enableAutoGeometryRestore( this );
 
+  setWindowModality( Qt::WindowModality::NonModal );
+  setWindowFlags( windowFlags() | Qt::WindowMinimizeButtonHint | Qt::Window | Qt::WindowCloseButtonHint | Qt::WindowSystemMenuHint );
+
   txtLog->setOpenLinks( false );
   connect( txtLog, &QTextBrowser::anchorClicked, this, &QgsProcessingAlgorithmDialogBase::urlClicked );
 
@@ -549,10 +552,7 @@ void QgsProcessingAlgorithmDialogBase::algExecuted( bool successful, const QVari
   if ( !successful )
   {
     // show dialog to display errors
-    show();
-    raise();
-    setWindowState( ( windowState() & ~Qt::WindowMinimized ) | Qt::WindowActive );
-    activateWindow();
+    showDialog();
     showLog();
   }
   else
@@ -574,12 +574,17 @@ void QgsProcessingAlgorithmDialogBase::taskTriggered( QgsTask *task )
 {
   if ( task == mAlgorithmTask )
   {
-    show();
-    raise();
-    setWindowState( ( windowState() & ~Qt::WindowMinimized ) | Qt::WindowActive );
-    activateWindow();
+    showDialog();
     showLog();
   }
+}
+
+void QgsProcessingAlgorithmDialogBase::showDialog()
+{
+  show();
+  raise();
+  setWindowState( ( windowState() & ~Qt::WindowMinimized ) | Qt::WindowActive );
+  activateWindow();
 }
 
 void QgsProcessingAlgorithmDialogBase::closeClicked()
@@ -740,6 +745,7 @@ void QgsProcessingAlgorithmDialogBase::closeEvent( QCloseEvent *e )
 void QgsProcessingAlgorithmDialogBase::runAlgorithm()
 {
 }
+
 
 void QgsProcessingAlgorithmDialogBase::setPercentage( double percent )
 {
@@ -906,6 +912,12 @@ bool QgsProcessingAlgorithmDialogBase::isFinalized()
   return true;
 }
 
+bool QgsProcessingAlgorithmDialogBase::isRunning()
+{
+  return true;
+}
+
+
 void QgsProcessingAlgorithmDialogBase::applyContextOverrides( QgsProcessingContext *context )
 {
   if ( !context )
@@ -953,6 +965,14 @@ void QgsProcessingAlgorithmDialogBase::reject()
   }
   QDialog::reject();
 }
+
+
+void QgsProcessingAlgorithmDialogBase::forceClose()
+{
+  mAlgorithmTask = nullptr;
+  close();
+}
+
 
 //
 // QgsProcessingAlgorithmProgressDialog
