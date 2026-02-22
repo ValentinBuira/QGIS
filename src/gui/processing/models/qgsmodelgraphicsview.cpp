@@ -58,9 +58,20 @@ QgsModelGraphicsView::QgsModelGraphicsView( QWidget *parent )
   mMidMouseButtonPanTool = new QgsModelViewToolTemporaryMousePan( this );
   mSpaceZoomTool = new QgsModelViewToolTemporaryKeyZoom( this );
 
+  // Workaround for Qt default behaviour where during the scroll the visible scene rect
+  // The visible scene rect would be also updated on the axis that is not being scrolled.
+  // With ScrollBarAlwaysOn, we ensure that the visible scene rect is stable during scroll.
+  // See https://github.com/qgis/QGIS/pull/64605#issuecomment-3771638032
+  setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOn );
+  setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOn );
+
+
   connect( horizontalScrollBar(), &QScrollBar::valueChanged, this, &QgsModelGraphicsView::friendlySetSceneRect );
   connect( verticalScrollBar(), &QScrollBar::valueChanged, this, &QgsModelGraphicsView::friendlySetSceneRect );
-
+  connect( horizontalScrollBar(), &QScrollBar::valueChanged, this, []( int value ) { qDebug() << "Horizontal scrollbar value changed to:" << value; } );
+  connect( verticalScrollBar(), &QScrollBar::valueChanged, this, []( int value ) { qDebug() << "Vertical scrollbar value changed to:" << value; } );
+  // connect( horizontalScrollBar(), &QScrollBar::sliderReleased, this, &QgsModelGraphicsView::friendlySetSceneRect );
+  // connect( verticalScrollBar(), &QScrollBar::sliderReleased, this, &QgsModelGraphicsView::friendlySetSceneRect );
   mSnapper.setSnapToGrid( true );
 }
 
@@ -406,7 +417,10 @@ void QgsModelGraphicsView::keyReleaseEvent( QKeyEvent *event )
 void QgsModelGraphicsView::setModelScene( QgsModelGraphicsScene *scene )
 {
   setScene( scene );
-
+  qDebug() << "setModelScene:";
+  connect( scene, &QgsModelGraphicsScene::sceneRectChanged, this, [this]() {
+    qDebug() << "sceneRectChanged signal emitted";
+  } );
   connect( scene, &QgsModelGraphicsScene::sceneRectChanged, this, &QgsModelGraphicsView::friendlySetSceneRect );
 
   // IMPORTANT!
@@ -517,11 +531,122 @@ void QgsModelGraphicsView::friendlySetSceneRect()
 
   const QRectF modelSceneRect = modelScene()->sceneRect();
   const QRectF visibleRect = mapToScene( viewport()->rect() ).boundingRect();
+  // const QRectF visibleRect = mapToScene( contentsRect() ).boundingRect();
+
+  // QPointF centerBefore = mapToScene(viewport()->rect().center());
+  QPointF centerBefore = visibleRect.center();
+  QgsSettings settings;
+
+  const bool showCenter = settings.value( u"/Processing/Modeler/ShowCenterPoint"_s, true ).toBool();
+  if ( showCenter )
+    addRect( QRectF( centerBefore.x(), centerBefore.y(), 10, 10 ), QPen( Qt::blue ), QBrush( Qt::NoBrush ) )->setZValue( 1000 );
+  qDebug() << "centerBefore:" << centerBefore;
+  // centerBefore = centerBefore + QPointF( 400, 400 );
+
+  qDebug() << "viewport()->rect():" << viewport()->rect();
+  // const QRectF visibleRect = mapToScene( contentsRect() ).boundingRect();
+  qDebug() << "contentsRect:" << contentsRect();
+  // QRectF newSceneRect; // = sceneRect();
+  // New test
+  // newSceneRect.setLeft( std::min(currentSceneRect.left(), std::min( modelSceneRect.left(), visibleRect.left() ) ) );
+  // newSceneRect.setRight( std::max( currentSceneRect.right(), std::max( modelSceneRect.right(), visibleRect.right() ) ) );
+  // newSceneRect.setTop( std::min( currentSceneRect.top(), std::min( modelSceneRect.top(), visibleRect.top() ) ) );
+  // newSceneRect.setBottom( std::max( currentSceneRect.bottom(), std::max( modelSceneRect.bottom(), visibleRect.bottom() ) ) );
+
+
   QRectF newSceneRect;
   newSceneRect.setLeft( std::min( modelSceneRect.left(), visibleRect.left() ) );
   newSceneRect.setRight( std::max( modelSceneRect.right(), visibleRect.right() ) );
   newSceneRect.setTop( std::min( modelSceneRect.top(), visibleRect.top() ) );
   newSceneRect.setBottom( std::max( modelSceneRect.bottom(), visibleRect.bottom() ) );
+
+
+  // newSceneRect.adjust( -100, -100, 100, 100 ); // add some padding to avoid constant resizing when close to edge of model rect
+
+
+  // newSceneRect = currentSceneRect.united( modelSceneRect );
+
+  // if ( newSceneRect.left() < visibleRect.left() && newSceneRect.left() > modelSceneRect.left()){
+  //   //  newSceneRect.setLeft( std::max( currentSceneRect.left(), std::min( modelSceneRect.left(), visibleRect.left() ) ) );
+  //    newSceneRect.setLeft(  std::min( modelSceneRect.left(), visibleRect.left() )  );
+  // }
+
+  // if ( visibleRect.top() > newSceneRect.top() && newSceneRect.top() > modelSceneRect.top()){
+  //   newSceneRect.setTop( std::max( currentSceneRect.top(), std::min( modelSceneRect.top(), visibleRect.top() ) ) );
+  // }
+
+  // if ( visibleRect.right() < newSceneRect.right() && newSceneRect.right() < modelSceneRect.right()){
+  //   newSceneRect.setRight( std::min( currentSceneRect.right(), std::max( modelSceneRect.right(), visibleRect.right() ) ) );
+  // }
+  // if ( visibleRect.bottom() < newSceneRect.bottom() && newSceneRect.bottom() < modelSceneRect.bottom()){
+  //   newSceneRect.setBottom( std::min( currentSceneRect.bottom(), std::max( modelSceneRect.bottom(), visibleRect.bottom() ) ) );
+  // }
+
+  // newSceneRect = modelSceneRect.united( visibleRect ).adjusted( -100, -100, 100, 100 ); // add some padding to avoid constant resizing when close to edge of model rect
+
+  // // Horizontally: Only expand if model extends beyond, but can shrink if both model and visible are inside
+  // newSceneRect.setLeft( std::min( newSceneRect.left(), modelSceneRect.left() ) );
+  // newSceneRect.setRight( std::max( newSceneRect.right(), modelSceneRect.right() ) );
+
+  // // Vertically: Expand/shrink to encompass model and visible rect
+  // // This allows scrolling to extend the rect and shrinking when content shrinks
+  // newSceneRect.setTop( std::min( newSceneRect.top(), std::min( modelSceneRect.top(), visibleRect.top() ) ) );
+  // newSceneRect.setBottom( std::max( newSceneRect.bottom(), std::max( modelSceneRect.bottom(), visibleRect.bottom() ) ) );
+
+  // // Allow shrinking on horizontal if model is smaller and visible doesn't extend beyond
+  // if ( modelSceneRect.left() > currentSceneRect.left() && visibleRect.left() > currentSceneRect.left() )
+  // {
+  //   newSceneRect.setLeft( std::max( currentSceneRect.left(), std::min( modelSceneRect.left(), visibleRect.left() ) ) );
+  // }
+  // if ( modelSceneRect.right() < currentSceneRect.right() && visibleRect.right() < currentSceneRect.right() )
+  // {
+  //   newSceneRect.setRight( std::min( currentSceneRect.right(), std::max( modelSceneRect.right(), visibleRect.right() ) ) );
+  // }
+
+  // if ( modelSceneRect.top() > currentSceneRect.top() && visibleRect.top() > currentSceneRect.top() )
+  // {
+  //   newSceneRect.setTop( std::max( currentSceneRect.top(), std::min( modelSceneRect.top(), visibleRect.top() ) ) );
+  // }
+  // if ( modelSceneRect.bottom() < currentSceneRect.bottom() && visibleRect.bottom() < currentSceneRect.bottom() )
+  // {
+  //   newSceneRect.setBottom( std::min( currentSceneRect.bottom(), std::max( modelSceneRect.bottom(), visibleRect.bottom() ) ) );
+  // }
+
+
+  // Qt scrollbar range are dealt in integer, so we round it ourselves to avoid a small "jump"
+  newSceneRect.setLeft( std::floor( newSceneRect.left() ) );
+  newSceneRect.setTop( std::floor( newSceneRect.top() ) );
+  newSceneRect.setRight( std::ceil( newSceneRect.right() ) );
+  newSceneRect.setBottom( std::ceil( newSceneRect.bottom() ) );
+
+  // qDebug() << "modelSceneRect:" << modelSceneRect;
+
+  qDebug() << "visibleRect:" << visibleRect.topLeft() << " to " << visibleRect.bottomRight();
+  qDebug() << "modelSceneRect:" << modelSceneRect.topLeft() << " to " << modelSceneRect.bottomRight();
+  qDebug() << "newSceneRect:" << newSceneRect.topLeft() << " to " << newSceneRect.bottomRight();
+
+  // qDebug() << "visibleRect.right():" << visibleRect.right();
+  // qDebug()<< "modelSceneRect.right():" << modelSceneRect.right();
+  // qDebug() << "newSceneRect.right():" << newSceneRect.right();
+  // qDebug() << ""; // blank line to separate log entries
+
+  // qDebug() << "visibleRect.left():" << visibleRect.left();
+  // qDebug() << "modelSceneRect.left():" << modelSceneRect.left();
+  // qDebug() << "newSceneRect.left():" << newSceneRect.left();
+  // qDebug() << ""; // blank line to separate log entries
+
+
+  // qDebug() << "visibleRect.top():" << visibleRect.top();
+  // qDebug() << "modelSceneRect.top():" << modelSceneRect.top();
+  // qDebug() << "newSceneRect.top():" << newSceneRect.top();
+  // qDebug() << ""; // blank line to separate log entries
+
+  // qDebug() << "visibleRect.bottom():" << visibleRect.bottom();
+  // qDebug() << "modelSceneRect.bottom():" << modelSceneRect.bottom();
+  // qDebug() << "newSceneRect.bottom():" << newSceneRect.bottom();
+
+  qDebug() << ""; // blank line to separate log entries
+
 
   // the above conversions may involve small rounding errors which stack up and could
   // result in unwanted small shifts of the visible scene area => only update the
@@ -532,9 +657,30 @@ void QgsModelGraphicsView::friendlySetSceneRect()
        || std::abs( newSceneRect.top() - currentSceneRect.top() ) > MIN_VIEW_SHIFT_THRESHOLD_PIXELS
        || std::abs( newSceneRect.bottom() - currentSceneRect.bottom() ) > MIN_VIEW_SHIFT_THRESHOLD_PIXELS )
   {
+    // horizontalScrollBar()->blockSignals( true );
+    // verticalScrollBar()->blockSignals( true );
+    // qDebug() << "horizontalScrollBar value ante:" << horizontalScrollBar()->value();
     mBlockScrollbarSignals++;
     setSceneRect( newSceneRect );
+    // centerOn(centerBefore);
+    // qDebug() << "center on (0,0)"; centerOn(0,0);
+    // addRect( newSceneRect, QPen( Qt::black ), QBrush( Qt::NoBrush ) )->setZValue( -1 );
+
+    const QRectF visibleRectAfter = mapToScene( viewport()->rect() ).boundingRect();
+    QPointF centerAfter = visibleRectAfter.center();
+    if ( showCenter )
+    {
+      addRect( QRectF( centerAfter.x(), centerAfter.y(), 10, 10 ), QPen( Qt::NoPen ), QBrush( Qt::green ) )->setZValue( 1000 );
+      addRect( newSceneRect, QPen( Qt::red ), QBrush( Qt::NoBrush ) )->setZValue( 999 );
+    }
+    qDebug() << "actuall centerAfter:" << centerAfter;
+    // horizontalScrollBar()->setRange(static_cast<int>(newSceneRect.right()), static_cast<int>(newSceneRect.left()));
+    // verticalScrollBar()->setRange(static_cast<int>(newSceneRect.bottom()), static_cast<int>(newSceneRect.top()));
+
     mBlockScrollbarSignals--;
+    // qDebug() << "horizontalScrollBar value post:" << horizontalScrollBar()->value();
+    // horizontalScrollBar()->blockSignals( false );
+    // verticalScrollBar()->blockSignals( false );
   }
 }
 
@@ -894,6 +1040,11 @@ QgsModelViewSnapMarker::QgsModelViewSnapMarker()
 
   setFlags( flags() | QGraphicsItem::ItemIgnoresTransformations );
   setZValue( QgsModelGraphicsScene::ZSnapIndicator );
+}
+
+QGraphicsRectItem *QgsModelGraphicsView::addRect( const QRectF &rect, const QPen &pen, const QBrush &brush )
+{
+  return scene()->addRect( rect, pen, brush );
 }
 
 void QgsModelViewSnapMarker::paint( QPainter *p, const QStyleOptionGraphicsItem *, QWidget * )

@@ -176,6 +176,18 @@ QgsModelDesignerDialog::QgsModelDesignerDialog( QWidget *parent, Qt::WindowFlags
   connect( mActionRun, &QAction::triggered, this, [this] { run(); } );
   connect( mActionRunSelectedSteps, &QAction::triggered, this, &QgsModelDesignerDialog::runSelectedSteps );
 
+  connect( mActionRepaint, &QAction::triggered, this, [this] {
+    qDebug() << "MANUAL REPAINT TRIGGERED";
+    repaintModel();
+  } );
+
+  connect( mActionCenterView, &QAction::triggered, this, [this] {
+    // center the view on the center of the scene rect
+    // const QRectF sceneRect = modelScene()->sceneRect();
+    // const QPointF center = sceneRect.center();
+    qDebug() << "CALL CENTER VIEW TO (0,0)";
+    mView->centerOn( 0, 0 );
+  } );
   mActionSnappingEnabled->setChecked( settings.value( u"/Processing/Modeler/enableSnapToGrid"_s, false ).toBool() );
   connect( mActionSnappingEnabled, &QAction::toggled, this, [this]( bool enabled ) {
     mView->snapper()->setSnapToGrid( enabled );
@@ -333,6 +345,10 @@ QgsModelDesignerDialog::QgsModelDesignerDialog( QWidget *parent, Qt::WindowFlags
 
   mActionShowComments->setChecked( settings.value( u"/Processing/Modeler/ShowComments"_s, true ).toBool() );
   connect( mActionShowComments, &QAction::toggled, this, &QgsModelDesignerDialog::toggleComments );
+
+  mActionShowCenterPoint->setChecked( settings.value( u"/Processing/Modeler/ShowCenterPoint"_s, false ).toBool() );
+  connect( mActionShowCenterPoint, &QAction::toggled, this, &QgsModelDesignerDialog::toggleCenterPoint );
+
 
   mActionShowFeatureCount->setChecked( settings.value( u"/Processing/Modeler/ShowFeatureCount"_s, true ).toBool() );
   connect( mActionShowFeatureCount, &QAction::toggled, this, &QgsModelDesignerDialog::toggleFeatureCount );
@@ -843,6 +859,22 @@ void QgsModelDesignerDialog::toggleFeatureCount( bool show )
 
   repaintModel( true );
 }
+
+void QgsModelDesignerDialog::toggleCenterPoint( bool show )
+{
+  QgsSettings().setValue( u"/Processing/Modeler/ShowCenterPoint"_s, show );
+  qDebug() << "TOGGLE CENTER POINT " << show;
+  if ( show )
+  {
+    repaintModel( true );
+    qDebug() << "SHOW RECT ";
+
+    QPointF center = view()->mapToScene( view()->viewport()->rect() ).boundingRect().center();
+    // TODO : add a single time add rect as a seperate Actions
+    // view()->addRect( QRectF( center.x(), center.y(), 10, 10 ), QPen( Qt::red ), QBrush( Qt::NoBrush ) )->setZValue( 1000 );
+  }
+}
+
 
 void QgsModelDesignerDialog::updateWindowTitle()
 {

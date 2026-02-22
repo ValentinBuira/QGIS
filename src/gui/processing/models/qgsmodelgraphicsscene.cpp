@@ -75,6 +75,7 @@ void QgsModelGraphicsScene::updateBounds()
 {
   //start with an empty rectangle
   QRectF bounds;
+  qDebug() << "Updating scene bounds...";
 
   //add all  items
   const QList<QGraphicsItem *> constItems = items();
@@ -87,9 +88,18 @@ void QgsModelGraphicsScene::updateBounds()
 
   if ( bounds.isValid() )
   {
+    qDebug() << "Scene bounds before margin:" << bounds.topLeft() << "to" << bounds.bottomRight();
+    // Add a margin and ensure bounds are roundded to integer-like values
     bounds.adjust( -SCENE_COMPONENT_MARGIN, -SCENE_COMPONENT_MARGIN, SCENE_COMPONENT_MARGIN, SCENE_COMPONENT_MARGIN );
+    bounds.setLeft( std::floor( bounds.left() ) );
+    bounds.setTop( std::floor( bounds.top() ) );
+    bounds.setRight( std::ceil( bounds.right() ) );
+    bounds.setBottom( std::ceil( bounds.bottom() ) );
+    qDebug() << "Scene bounds after margin:" << bounds.topLeft() << "to" << bounds.bottomRight();
+    ;
   }
 
+  addRect( bounds, QPen( Qt::black ), QBrush( Qt::NoBrush ) )->setZValue( -1 );
   setSceneRect( bounds );
 }
 
@@ -330,6 +340,8 @@ void QgsModelGraphicsScene::createItems( QgsProcessingModelAlgorithm *model, Qgs
     }
     mOutputItems.insert( it.value().childId(), outputItems );
   }
+
+  addEllipse( 0, 0, 20, 20, QPen( Qt::black ), QBrush( Qt::black ) )->setZValue( 1000 );
 }
 
 QList<QgsModelComponentGraphicItem *> QgsModelGraphicsScene::selectedComponentItems()

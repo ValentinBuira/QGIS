@@ -98,6 +98,8 @@ Aborts pending undo command
 .. versionadded:: 4.0
 %End
 
+    QGraphicsRectItem *addRect( const QRectF &rect, const QPen &pen = QPen(), const QBrush &brush = QBrush() );
+
 
     enum ClipboardOperation /BaseType=IntEnum/
     {

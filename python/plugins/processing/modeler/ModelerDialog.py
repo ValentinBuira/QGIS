@@ -250,6 +250,7 @@ class ModelerDialog(QgsModelDesignerDialog):
         if not showComments:
             scene.setFlag(QgsModelGraphicsScene.Flag.FlagHideComments)
 
+        print("REPAINT MODEL")
         context = createContext()
         self.setModelScene(scene)
         # create items later that setModelScene to setup link to messageBar to the scene

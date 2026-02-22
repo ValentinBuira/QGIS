@@ -103,9 +103,19 @@
     <addaction name="separator"/>
     <addaction name="mActionAddGroupBox"/>
    </widget>
+   <widget class="QMenu" name="menuDebug">
+    <property name="title">
+     <string>Debug</string>
+    </property>
+    <addaction name="separator"/>
+    <addaction name="mActionShowCenterPoint"/>
+    <addaction name="mActionRepaint"/>
+    <addaction name="mActionCenterView"/>
+   </widget>
    <addaction name="menu_Model"/>
    <addaction name="mMenuEdit"/>
    <addaction name="mMenuView"/>
+   <addaction name="menuDebug"/>
   </widget>
   <widget class="QToolBar" name="mToolbar">
    <property name="windowTitle">
@@ -792,6 +802,24 @@
    </property>
    <property name="text">
     <string>Show Feature Count</string>
+   </property>
+  </action>
+  <action name="mActionShowCenterPoint">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>show center</string>
+   </property>
+  </action>
+  <action name="mActionRepaint">
+   <property name="text">
+    <string>repaint </string>
+   </property>
+  </action>
+  <action name="mActionCenterView">
+   <property name="text">
+    <string>mActionCenterView</string>
    </property>
   </action>
  </widget>

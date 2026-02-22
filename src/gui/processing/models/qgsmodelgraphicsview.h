@@ -21,8 +21,10 @@
 #include "qgsmodelsnapper.h"
 #include "qgsprocessingcontext.h"
 
+#include <QBrush>
 #include <QGraphicsRectItem>
 #include <QGraphicsView>
+#include <QPen>
 
 class QgsModelViewTool;
 class QgsModelViewToolTemporaryKeyPan;
@@ -125,6 +127,8 @@ class GUI_EXPORT QgsModelGraphicsView : public QGraphicsView
      * \since QGIS 4.0
      */
     void abortCommand();
+
+    QGraphicsRectItem *addRect( const QRectF &rect, const QPen &pen = QPen(), const QBrush &brush = QBrush() );
 
 
     //! Clipboard operations
