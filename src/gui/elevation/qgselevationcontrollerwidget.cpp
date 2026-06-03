@@ -74,8 +74,8 @@ QgsElevationControllerWidget::QgsElevationControllerWidget( QWidget *parent )
   QHBoxLayout *hlSlider = new QHBoxLayout();
   hlSlider->setContentsMargins( 0, 0, 0, 0 );
   hlSlider->setSpacing( 2 );
-  hlSlider->addWidget( mSlider );
-  hlSlider->addWidget( mSliderLabels, 1 );
+  hlSlider->addWidget( mSliderLabels );
+  hlSlider->addWidget( mSlider, 1 );
   hlSlider->addStretch();
   vl->addLayout( hlSlider );
 
