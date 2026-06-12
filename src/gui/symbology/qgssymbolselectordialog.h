@@ -29,6 +29,7 @@
 #include <QDialogButtonBox>
 #include <QPointer>
 #include <QStandardItemModel>
+#include <qstyleditemdelegate.h>
 
 class QgsStyle;
 class QgsSymbol;
@@ -261,6 +262,8 @@ class GUI_EXPORT QgsSymbolSelectorWidget : public QgsPanelWidget, private Ui::Qg
      */
     void setWidget( QWidget *widget );
 
+    void eyelidClicked( const QModelIndex &index );
+
     QgsStyle *mStyle = nullptr;
     QgsSymbol *mSymbol = nullptr;
     std::unique_ptr<QgsSymbol> mOwnedSymbol;
@@ -397,6 +400,51 @@ class GUI_EXPORT QgsSymbolSelectorDialog : public QDialog
 
     QgsSymbolSelectorWidget *mSelectorWidget = nullptr;
     QDialogButtonBox *mButtonBox = nullptr;
+};
+
+
+class EyelidLayerItemDelegate : public QStyledItemDelegate SIP_SKIP
+{
+    Q_OBJECT
+  public:
+    EyelidLayerItemDelegate( QObject *parent );
+    bool eventFilter( QObject *obj, QEvent *event ) override;
+
+  protected:
+    void paint( QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index ) const override;
+
+  private:
+    void setHoveredIndex( const QModelIndex &index );
+
+    QModelIndex mHoveredIndex;
+};
+
+
+class EyeEnableSymbolLayerDelegate : public QStyledItemDelegate SIP_SKIP
+{
+    Q_OBJECT
+
+  public:
+    EyeEnableSymbolLayerDelegate( QObject *parent = nullptr );
+
+    // QAbstractItemDelegate interface
+    QWidget *createEditor( QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index ) const override;
+    void setEditorData( QWidget *editor, const QModelIndex &index ) const override;
+    void setModelData( QWidget *editor, QAbstractItemModel *model, const QModelIndex &index ) const override;
+
+    /**
+     * Sets the list of \a nativeTypes supported by a data provider.
+     *
+     * If this list is non-empty, then the destination field types will be populated
+     * accordingly. If the list is empty, then a set of default native types will be
+     * used instead.
+     *
+     * \since QGIS 3.44
+     */
+    // void setNativeTypes( const QList< QgsVectorDataProvider::NativeType > &nativeTypes );
+
+  private:
+    // QList< QgsVectorDataProvider::NativeType > mNativeTypes;
 };
 
 #endif

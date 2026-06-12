@@ -243,6 +243,95 @@ class SymbolLayerItem : public QStandardItem
     QPointer<QScreen> mScreen;
 };
 
+
+//
+// EyelidLayerItemDelegate
+//
+
+EyelidLayerItemDelegate::EyelidLayerItemDelegate( QObject *parent )
+  : QStyledItemDelegate( parent )
+{}
+
+bool EyelidLayerItemDelegate::eventFilter( QObject *obj, QEvent *event )
+{
+  if ( event->type() == QEvent::HoverEnter || event->type() == QEvent::HoverMove )
+  {
+    QHoverEvent *hoverEvent = static_cast<QHoverEvent *>( event );
+    if ( QAbstractItemView *view = qobject_cast<QAbstractItemView *>( obj->parent() ) )
+    {
+      const QModelIndex indexUnderMouse = view->indexAt( hoverEvent->pos() );
+      setHoveredIndex( indexUnderMouse );
+      view->viewport()->update();
+    }
+  }
+  else if ( event->type() == QEvent::HoverLeave )
+  {
+    setHoveredIndex( QModelIndex() );
+    qobject_cast<QWidget *>( obj )->update();
+  }
+  return QStyledItemDelegate::eventFilter( obj, event );
+}
+
+void EyelidLayerItemDelegate::paint( QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index ) const
+{
+  QStyledItemDelegate::paint( painter, option, index );
+
+  if ( index == mHoveredIndex )
+  {
+    QStyleOptionButton buttonOption;
+    buttonOption.initFrom( option.widget );
+    buttonOption.rect = option.rect;
+
+    option.widget->style()->drawControl( QStyle::CE_PushButton, &buttonOption, painter );
+  }
+
+  const QIcon icon = QgsApplication::getThemeIcon( "/mActionShowAllLayers.svg" );
+  const QRect iconRect( option.rect.left() + ( option.rect.width() - 16 ) / 2, option.rect.top() + ( option.rect.height() - 16 ) / 2, 16, 16 );
+
+  icon.paint( painter, iconRect );
+}
+
+void EyelidLayerItemDelegate::setHoveredIndex( const QModelIndex &index )
+{
+  mHoveredIndex = index;
+}
+
+
+//
+// EyeEnableSymbolLayerDelegate
+//
+
+EyeEnableSymbolLayerDelegate::EyeEnableSymbolLayerDelegate( QObject *parent )
+  : QStyledItemDelegate( parent )
+{}
+
+void EyeEnableSymbolLayerDelegate::setModelData( QWidget *editor, QAbstractItemModel *model, const QModelIndex &index ) const
+{
+  QSpinBox *spinBox = static_cast<QSpinBox *>( editor );
+  spinBox->interpretText();
+  int value = spinBox->value();
+
+  model->setData( index, value, Qt::EditRole );
+}
+
+void EyeEnableSymbolLayerDelegate::setEditorData( QWidget *editor, const QModelIndex &index ) const
+{
+  int value = index.data( Qt::EditRole ).toInt();
+
+  QSpinBox *spinBox = static_cast<QSpinBox *>( editor );
+  spinBox->setValue( value );
+}
+
+QWidget *EyeEnableSymbolLayerDelegate::createEditor( QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index ) const
+{
+  QSpinBox *editor = new QSpinBox( parent );
+  editor->setFrame( false );
+  editor->setMinimum( 0 );
+  editor->setMaximum( 100 );
+
+  return editor;
+}
+
 ///@endcond
 
 //////////
@@ -306,6 +395,9 @@ QgsSymbolSelectorWidget::QgsSymbolSelectorWidget( QgsSymbol *symbol, QgsStyle *s
   btnDown->setIcon( QIcon( QgsApplication::iconPath( "mActionArrowDown.svg" ) ) );
 
   mSymbolLayersModel = new QStandardItemModel( layersTree );
+  // mSymbolLayersModel = new QgsSymbolLayerModel( layersTree );
+  // mSymbolLayersModel->setColumnCount( 2 );
+
   // Set the symbol
   layersTree->setModel( mSymbolLayersModel );
   layersTree->setHeaderHidden( true );
@@ -359,6 +451,19 @@ QgsSymbolSelectorWidget::QgsSymbolSelectorWidget( QgsSymbol *symbol, QgsStyle *s
 
   // set symbol as active item in the tree
   const QModelIndex newIndex = layersTree->model()->index( 0, 0 );
+
+  int lastColumn = layersTree->model()->columnCount() - 1;
+  qDebug() << "column count: " << layersTree->model()->columnCount();
+  EyelidLayerItemDelegate *eyelidDelegate = new EyelidLayerItemDelegate( layersTree );
+  // EyeEnableSymbolLayerDelegate *eyelidDelegate = new EyeEnableSymbolLayerDelegate;
+
+  // layersTree->setItemDelegateForColumn( lastColumn, eyelidDelegate );
+
+  // layersTree->viewport()->installEventFilter( eyelidDelegate );
+
+  layersTree->setHeaderHidden( false );
+  // layersTree->viewport()->setAttribute( Qt::WA_Hover );
+  // lstRecent->setSelectionBehavior( QAbstractItemView::SelectRows );
   layersTree->setCurrentIndex( newIndex );
 
   setPanelTitle( tr( "Symbol Selector" ) );
@@ -623,7 +728,21 @@ void QgsSymbolSelectorWidget::symbolChanged()
   updatePreview();
   // connect it back once things are set
   connect( layersTree->selectionModel(), &QItemSelectionModel::currentChanged, this, &QgsSymbolSelectorWidget::layerChanged );
+  connect( layersTree, &QTreeView::clicked, this, &QgsSymbolSelectorWidget::eyelidClicked );
 }
+
+
+void QgsSymbolSelectorWidget::eyelidClicked( const QModelIndex &index )
+{
+  int ClearColumn = 2; //TODO before the PR use enum based
+  if ( index.column() == ClearColumn )
+  {
+    // removeRecentCrsItem( index );
+    qDebug() << "Hellowwww! ";
+    // layersTree->model()->itemData(index);
+  }
+}
+
 
 void QgsSymbolSelectorWidget::setWidget( QWidget *widget )
 {
@@ -639,7 +758,9 @@ void QgsSymbolSelectorWidget::updateLockButton()
   QgsSymbolLayer *layer = currentLayer();
   if ( !layer )
     return;
-  mLockColorAction->setChecked( layer->isLocked() );
+  bool locked = layer->isLocked();
+  qDebug() << "after is locked ";
+  mLockColorAction->setChecked( locked );
   mLockSelectionColorAction->setChecked( layer->userFlags() & Qgis::SymbolLayerUserFlag::DisableSelectionRecoloring );
 
   updateLockButtonIcon();
