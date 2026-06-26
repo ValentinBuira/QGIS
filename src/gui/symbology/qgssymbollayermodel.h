@@ -70,6 +70,8 @@ class QgsSymbolLayerModelNode : public QObject
     //! Gets pointer to the parent. If parent is NULLPTR, the node is a root node
     QgsSymbolLayerModelNode *parent() { return mParent; }
 
+    bool isRootNode() const { return mParent == nullptr; }
+
     /**
      * Returns a list of children belonging to the node.
      */

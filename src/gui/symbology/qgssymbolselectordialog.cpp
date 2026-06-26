@@ -465,7 +465,7 @@ void QgsSymbolSelectorWidget::symbolChanged()
     return;
   // disconnect to avoid recreating widget
   disconnect( layersTree->selectionModel(), &QItemSelectionModel::currentChanged, this, &QgsSymbolSelectorWidget::layerChanged );
-  if ( currentNode->parent() )
+  if ( currentNode->parent() && !currentNode->parent()->isRootNode() )
   {
     // it is a sub-symbol
     QgsSymbol *symbol = currentNode->symbol();
