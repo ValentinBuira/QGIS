@@ -238,10 +238,6 @@ QgsSymbolSelectorWidget::QgsSymbolSelectorWidget( QgsSymbol *symbol, QgsStyle *s
   // set symbol as active item in the tree
   const QModelIndex newIndex = layersTree->model()->index( 0, 0 );
 
-  int lastColumn = layersTree->model()->columnCount() - 1;
-
-
-  layersTree->setHeaderHidden( false );
   // layersTree->viewport()->setAttribute( Qt::WA_Hover );
   // lstRecent->setSelectionBehavior( QAbstractItemView::SelectRows );
   layersTree->setCurrentIndex( newIndex );
