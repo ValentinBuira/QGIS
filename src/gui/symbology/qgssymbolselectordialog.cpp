@@ -207,7 +207,6 @@ QgsSymbolSelectorWidget::QgsSymbolSelectorWidget( QgsSymbol *symbol, QgsStyle *s
   connect( selModel, &QItemSelectionModel::currentChanged, this, &QgsSymbolSelectorWidget::layerChanged );
 
   mSymbolLayersModel->setSymbol( mSymbol );
-  mSymbolLayersModel->rebuild();
 
   updateExpandedStateFromNode( mSymbolLayersModel->rootNode() );
   // loadSymbol( mSymbol, static_cast<QgsSymbolLayerModelNode *>( mSymbolLayersModel->invisibleRootItem() ) );
@@ -329,13 +328,11 @@ void QgsSymbolSelectorWidget::loadSymbol( QgsSymbol *symbol, QgsSymbolLayerModel
 
   mSymbol = symbol;
   mSymbolLayersModel->setSymbol( symbol );
-  mSymbolLayersModel->rebuild();
 }
 
 void QgsSymbolSelectorWidget::reloadSymbol()
 {
   mSymbolLayersModel->setSymbol( mSymbol );
-  mSymbolLayersModel->rebuild();
   // loadSymbol( mSymbol, static_cast<QgsSymbolLayerModelNode *>( mSymbolLayersModel->invisibleRootItem() ) );
   updateExpandedStateFromNode( mSymbolLayersModel->rootNode() );
 }

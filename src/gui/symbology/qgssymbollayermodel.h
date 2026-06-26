@@ -57,6 +57,7 @@ class QgsSymbolLayerModelNode : public QObject
 
     QIcon icon() const;
 
+    //! Returns the item's data for the given role
     QVariant data( int role ) const;
 
     //! returns the symbol pointer; helpful in determining a layer's parent symbol
@@ -132,8 +133,8 @@ class QgsSymbolLayerModel : public QAbstractItemModel
 
   public:
     /**
-   * Constructor for QgsSymbolLayerModel, with the specified \a parent object.
-   */
+     * Constructor for QgsSymbolLayerModel, with the specified \a parent object.
+     */
     QgsSymbolLayerModel( QgsVectorLayer *vl, QObject *parent SIP_TRANSFERTHIS = nullptr );
 
     QVariant data( const QModelIndex &index, int role ) const override;
@@ -142,9 +143,14 @@ class QgsSymbolLayerModel : public QAbstractItemModel
     QModelIndex index( int row, int column, const QModelIndex &parent = QModelIndex() ) const override;
     QModelIndex parent( const QModelIndex &child ) const override;
 
-    void rebuild();
+    /**
+     * Updates the descendants of the given \a parent node with the given \a symbol.
+     */
     void updateNode( QgsSymbol *symbol, QgsSymbolLayerModelNode *parent );
 
+    /**
+     * Sets the \a symbol associated with the model.
+     */
     void setSymbol( QgsSymbol *symbol );
 
     /**
@@ -166,6 +172,7 @@ class QgsSymbolLayerModel : public QAbstractItemModel
   private:
     QModelIndex indexOfParentTreeNode( QgsSymbolLayerModelNode *parentNode ) const;
     void loadSymbol( QgsSymbol *symbol, QgsSymbolLayerModelNode *parent, bool update = false );
+    void rebuild();
 
     std::unique_ptr<QgsSymbolLayerModelNode> mRootNode;
 

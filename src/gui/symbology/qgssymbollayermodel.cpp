@@ -330,6 +330,8 @@ void QgsSymbolLayerModel::setSymbol( QgsSymbol *symbol )
   {
     mSymbol = symbol;
   }
+
+  rebuild();
 }
 
 void QgsSymbolLayerModel::loadSymbol( QgsSymbol *symbol, QgsSymbolLayerModelNode *parent, bool update )
