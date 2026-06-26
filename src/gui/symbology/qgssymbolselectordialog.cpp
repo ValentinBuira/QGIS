@@ -354,8 +354,8 @@ void QgsSymbolSelectorWidget::updateUi()
     return;
   }
 
-  const int rowCount = node->parent()->myRowCount();
-  const int currentRow = node->myRow();
+  const int rowCount = node->parent()->rowCount();
+  const int currentRow = node->rowIndex();
   // const int rowCount = mSymbolLayersModel->rowCount( mSymbolLayersModel->node2index( node->parent() ) );
 
 
@@ -533,7 +533,7 @@ void QgsSymbolSelectorWidget::addLayer()
   QgsSymbolLayerModelNode *node = static_cast<QgsSymbolLayerModelNode *>( mSymbolLayersModel->index2node( idx ) );
   if ( node->isLayer() )
   {
-    insertIdx = node->myRow();
+    insertIdx = node->rowIndex();
     node = static_cast<QgsSymbolLayerModelNode *>( node->parent() );
   }
 
@@ -551,7 +551,7 @@ void QgsSymbolSelectorWidget::addLayer()
     if ( insertIdx == -1 )
       parentSymbol->appendSymbolLayer( newLayer.release() );
     else
-      parentSymbol->insertSymbolLayer( node->myRowCount() - insertIdx, newLayer.release() );
+      parentSymbol->insertSymbolLayer( node->rowCount() - insertIdx, newLayer.release() );
   }
 
   // restore data-defined values at marker level
@@ -579,9 +579,9 @@ void QgsSymbolSelectorWidget::addLayer()
 void QgsSymbolSelectorWidget::removeLayer()
 {
   QgsSymbolLayerModelNode *node = currentLayerNode();
-  const int row = node->myRow();
+  const int row = node->rowIndex();
   QgsSymbolLayerModelNode *parent = static_cast<QgsSymbolLayerModelNode *>( node->parent() );
-  const int layerIdx = parent->myRowCount() - row - 1; // IMPORTANT
+  const int layerIdx = parent->rowCount() - row - 1; // IMPORTANT
   QgsSymbol *parentSymbol = parent->symbol();
   QgsSymbolLayer *tmpLayer = parentSymbol->takeSymbolLayer( layerIdx );
 
@@ -615,12 +615,12 @@ void QgsSymbolSelectorWidget::moveLayerByOffset( int offset )
   QgsSymbolLayerModelNode *node = currentLayerNode();
   if ( !node )
     return;
-  const int row = node->myRow();
+  const int row = node->rowIndex();
 
   QgsSymbolLayerModelNode *parent = node->parent();
   QgsSymbol *parentSymbol = parent->symbol();
 
-  const int layerIdx = parent->myRowCount() - row - 1;
+  const int layerIdx = parent->rowCount() - row - 1;
   // switch layers
   QgsSymbolLayer *tmpLayer = parentSymbol->takeSymbolLayer( layerIdx );
   parentSymbol->insertSymbolLayer( layerIdx - offset, tmpLayer );
@@ -664,7 +664,7 @@ void QgsSymbolSelectorWidget::duplicateLayer()
     return;
 
   QgsSymbolLayer *source = node->layer();
-  const int insertIdx = node->myRow();
+  const int insertIdx = node->rowIndex();
   node = static_cast<QgsSymbolLayerModelNode *>( node->parent() );
 
   QgsSymbol *parentSymbol = node->symbol();
@@ -674,7 +674,7 @@ void QgsSymbolSelectorWidget::duplicateLayer()
   if ( insertIdx == -1 )
     parentSymbol->appendSymbolLayer( newLayer );
   else
-    parentSymbol->insertSymbolLayer( node->myRowCount() - insertIdx, newLayer );
+    parentSymbol->insertSymbolLayer( node->rowCount() - insertIdx, newLayer );
 
   // QgsSymbolLayerModelNode *newLayerItem = new QgsSymbolLayerModelNode( newLayer, parentSymbol->type(), mVectorLayer, screen() );
   // node->insertRow( insertIdx == -1 ? 0 : insertIdx, newLayerItem );
@@ -715,7 +715,7 @@ void QgsSymbolSelectorWidget::changeLayer( QgsSymbolLayer *newLayer )
 
   // Change the symbol at last to avoid deleting item's layer
 
-  const int layerIdx = parentNode->myRowCount() - node->myRow() - 1;
+  const int layerIdx = parentNode->rowCount() - node->rowIndex() - 1;
   symbol->changeSymbolLayer( layerIdx, newLayer );
 
   mSymbolLayersModel->updateNode( symbol, parentNode );

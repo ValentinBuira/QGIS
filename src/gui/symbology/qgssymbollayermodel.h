@@ -55,6 +55,7 @@ class QgsSymbolLayerModelNode : public QObject
     //! Returns whether the node is a symbol layer. And otherwise, it is a symbol.
     bool isLayer() const { return mIsLayer; }
 
+    //! Returns the item preview icon.
     QIcon icon() const;
 
     //! Returns the item's data for the given role
@@ -99,8 +100,15 @@ class QgsSymbolLayerModelNode : public QObject
     QList<QgsSymbolLayerModelNode *> children() const { return mChildren; }
 
 
-    int myRowCount() const;
-    int myRow() const;
+    /**
+     * Returns the number of rows(children) belonging to the node.
+     */
+    int rowCount() const;
+
+    /**
+     * Returns the row index of the node within its parent.
+     */
+    int rowIndex() const;
 
   private:
     void setLayer( QgsSymbolLayer *layer, Qgis::SymbolType symbolType );

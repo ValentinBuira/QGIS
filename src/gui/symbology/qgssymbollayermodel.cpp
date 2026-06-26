@@ -193,12 +193,12 @@ void QgsSymbolLayerModelNode::setExpanded( bool expanded )
 }
 
 
-int QgsSymbolLayerModelNode::myRowCount() const
+int QgsSymbolLayerModelNode::rowCount() const
 {
   return children().count();
 }
 
-int QgsSymbolLayerModelNode::myRow() const
+int QgsSymbolLayerModelNode::rowIndex() const
 {
   if ( !mParent )
     return -1;
