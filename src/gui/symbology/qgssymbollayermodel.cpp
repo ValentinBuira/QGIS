@@ -317,26 +317,8 @@ void QgsSymbolLayerModel::updateNode( QgsSymbol *symbol, QgsSymbolLayerModelNode
   endRemoveRows();
 
   beginInsertRows( parentIndex, 0, symbol->symbolLayerCount() - 1 );
-  // loadSymbol( symbol, parent );
 
-
-  // QgsSymbolLayerModelNode *symbolNode = new QgsSymbolLayerModelNode( symbol, mVectorLayer, nullptr /*screen()*/ );
-  // parent->addChildNode( symbolNode );
-
-
-  const int count = symbol->symbolLayerCount();
-  for ( int i = count - 1; i >= 0; i-- )
-  {
-    QgsSymbolLayerModelNode *layerNode = new QgsSymbolLayerModelNode( symbol->symbolLayer( i ), symbol->type(), mVectorLayer, nullptr /*screen()*/ );
-    //   layerItem->setEditable( false ); TODO check if this is set to false in QAbstractItemModel::flags
-    parent->addChildNode( layerNode );
-    if ( symbol->symbolLayer( i )->subSymbol() )
-    {
-      loadSymbol( symbol->symbolLayer( i )->subSymbol(), layerNode );
-    }
-    layerNode->setExpanded( true );
-  }
-  parent->setExpanded( true );
+  loadSymbol( symbol, parent, true );
 
   endInsertRows();
 }
@@ -350,7 +332,7 @@ void QgsSymbolLayerModel::setSymbol( QgsSymbol *symbol )
   }
 }
 
-void QgsSymbolLayerModel::loadSymbol( QgsSymbol *symbol, QgsSymbolLayerModelNode *parent )
+void QgsSymbolLayerModel::loadSymbol( QgsSymbol *symbol, QgsSymbolLayerModelNode *parent, bool update )
 {
   if ( !symbol )
     return;
@@ -360,8 +342,16 @@ void QgsSymbolLayerModel::loadSymbol( QgsSymbol *symbol, QgsSymbolLayerModelNode
     return;
   }
 
-  QgsSymbolLayerModelNode *symbolNode = new QgsSymbolLayerModelNode( symbol, mVectorLayer, nullptr /*screen()*/ );
-  parent->addChildNode( symbolNode );
+  QgsSymbolLayerModelNode *symbolNode;
+  if ( !update )
+  {
+    symbolNode = new QgsSymbolLayerModelNode( symbol, mVectorLayer, nullptr /*screen()*/ );
+    parent->addChildNode( symbolNode );
+  }
+  else
+  {
+    symbolNode = parent;
+  }
 
 
   const int count = symbol->symbolLayerCount();

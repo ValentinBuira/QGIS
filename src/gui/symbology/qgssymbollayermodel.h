@@ -146,7 +146,6 @@ class QgsSymbolLayerModel : public QAbstractItemModel
     void updateNode( QgsSymbol *symbol, QgsSymbolLayerModelNode *parent );
 
     void setSymbol( QgsSymbol *symbol );
-    void loadSymbol( QgsSymbol *symbol, QgsSymbolLayerModelNode *parent );
 
     /**
      * Returns the model index corresponding to the given \a node.
@@ -166,6 +165,7 @@ class QgsSymbolLayerModel : public QAbstractItemModel
 
   private:
     QModelIndex indexOfParentTreeNode( QgsSymbolLayerModelNode *parentNode ) const;
+    void loadSymbol( QgsSymbol *symbol, QgsSymbolLayerModelNode *parent, bool update = false );
 
     std::unique_ptr<QgsSymbolLayerModelNode> mRootNode;
 
