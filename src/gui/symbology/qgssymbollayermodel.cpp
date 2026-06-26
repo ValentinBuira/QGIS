@@ -210,18 +210,8 @@ QgsSymbolLayerModel::QgsSymbolLayerModel( QgsVectorLayer *vl, QObject *parent )
   : QAbstractItemModel( parent )
   , mVectorLayer( vl )
   , mRootNode( std::make_unique<QgsSymbolLayerModelNode>() )
-{
-  // mCrsDbRecords = QgsApplication::coordinateReferenceSystemRegistry()->crsDbRecords();
+{}
 
-  // rebuild();
-
-  // connect( QgsApplication::coordinateReferenceSystemRegistry(), &QgsCoordinateReferenceSystemRegistry::userCrsAdded, this, &QgsCoordinateReferenceSystemModel::userCrsAdded );
-  // connect( QgsApplication::coordinateReferenceSystemRegistry(), &QgsCoordinateReferenceSystemRegistry::userCrsRemoved, this, &QgsCoordinateReferenceSystemModel::userCrsRemoved );
-  // connect( QgsApplication::coordinateReferenceSystemRegistry(), &QgsCoordinateReferenceSystemRegistry::userCrsChanged, this, &QgsCoordinateReferenceSystemModel::userCrsChanged );
-}
-
-// Qt::ItemFlags QgsSymbolLayerModel::flags( const QModelIndex &index ) const
-// {}
 
 QVariant QgsSymbolLayerModel::data( const QModelIndex &index, int role ) const
 {
@@ -234,9 +224,7 @@ QVariant QgsSymbolLayerModel::data( const QModelIndex &index, int role ) const
 
   return node->data( role );
 };
-// QVariant QgsSymbolLayerModel::headerData( int section, Qt::Orientation orientation, int role ) const {
 
-// };
 int QgsSymbolLayerModel::rowCount( const QModelIndex &parent ) const
 {
   QgsSymbolLayerModelNode *n = index2node( parent );
@@ -245,6 +233,7 @@ int QgsSymbolLayerModel::rowCount( const QModelIndex &parent ) const
 
   return n->children().count();
 };
+
 int QgsSymbolLayerModel::columnCount( const QModelIndex & ) const
 {
   return 1;
@@ -311,7 +300,6 @@ QModelIndex QgsSymbolLayerModel::node2index( QgsSymbolLayerModelNode *node ) con
   Q_ASSERT( row >= 0 );
   return index( row, 0, parentIndex );
 };
-
 
 void QgsSymbolLayerModel::rebuild()
 {

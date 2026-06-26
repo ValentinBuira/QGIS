@@ -24,52 +24,67 @@ class QgsSymbolLayerModelNode;
 class QgsSymbol;
 class QScreen;
 class QgsSymbolLayer;
-// class QgsVectorLayer;
-
-// #include "qgis_gui.h"
-// #include "qgis_sip.h"
-
-// #include "qgspanelwidget.h"
-//
-// #include "qgssymbolwidgetcontext.h"
 
 
-// Hybrid model node which may represent a symbol or a layer
-// Check using node->isLayer()
+/**
+ * \brief Abstract base class for nodes contained within a QgsSymbolLayerModel. May represent a symbol or a layer.
+ * \warning Not part of stable API and may change in future QGIS releases.
+ * \ingroup gui
+ * \since QGIS 4.4
+ */
 class QgsSymbolLayerModelNode : public QObject
 {
     Q_OBJECT
   public:
+    /**
+     * Constructor for QgsSymbolLayerModelNode for an empty node. e.g a root node.
+     */
     QgsSymbolLayerModelNode();
+    /**
+     * Constructor for QgsSymbolLayerModelNode for a symbol layer node. e.g a child node of a symbol.
+     */
     QgsSymbolLayerModelNode( QgsSymbolLayer *layer, Qgis::SymbolType symbolType, QgsVectorLayer *vectorLayer, QScreen *screen );
+    /**
+     * Constructor for QgsSymbolLayerModelNode for a symbol node
+     */
     QgsSymbolLayerModelNode( QgsSymbol *symbol, QgsVectorLayer *vectorLayer, QScreen *screen );
-
     ~QgsSymbolLayerModelNode() override;
-    void setLayer( QgsSymbolLayer *layer, Qgis::SymbolType symbolType );
-    void setSymbol( QgsSymbol *symbol );
+
 
     void updatePreview();
-
+    //! Returns whether the node is a symbol layer. And otherwise, it is a symbol.
     bool isLayer() const { return mIsLayer; }
 
     QIcon icon() const;
 
     QVariant data( int role ) const;
 
-    // returns the symbol pointer; helpful in determining a layer's parent symbol
+    //! returns the symbol pointer; helpful in determining a layer's parent symbol
     QgsSymbol *symbol() { return mSymbol; }
 
+    //! returns the symbol layer pointer
     QgsSymbolLayer *layer() { return mLayer; }
 
+    /**
+     * Adds a child \a node to this node, transferring ownership of the node
+     * to this node.
+     */
     void addChildNode( QgsSymbolLayerModelNode *node );
+
+    /**
+     * Deletes all child nodes from this node.
+     */
     void deleteChildren();
 
+    //! Returns whether the node should be shown as expanded or collapsed in GUI
     bool expanded() const;
+    //! Sets whether the node should be shown as expanded or collapsed in GUI
     void setExpanded( bool expanded );
 
     //! Gets pointer to the parent. If parent is NULLPTR, the node is a root node
     QgsSymbolLayerModelNode *parent() { return mParent; }
 
+    //! Returns whether the node is a root node (i.e. has no parent)
     bool isRootNode() const { return mParent == nullptr; }
 
     /**
@@ -87,6 +102,9 @@ class QgsSymbolLayerModelNode : public QObject
     int myRow() const;
 
   private:
+    void setLayer( QgsSymbolLayer *layer, Qgis::SymbolType symbolType );
+    void setSymbol( QgsSymbol *symbol );
+
     QgsSymbolLayer *mLayer = nullptr;
     QgsSymbol *mSymbol = nullptr;
     QPointer<QgsVectorLayer> mVectorLayer;
@@ -102,7 +120,12 @@ class QgsSymbolLayerModelNode : public QObject
     bool mExpanded = true;
 };
 
-
+/**
+ * \brief A QAbstractItemModel subclass for displaying a QgsSymbol in a tree view in the symbology panel.
+ * \warning Not part of stable API and may change in future QGIS releases.
+ * \ingroup gui
+ * \since QGIS 4.4
+ */
 class QgsSymbolLayerModel : public QAbstractItemModel
 {
     Q_OBJECT
@@ -113,9 +136,7 @@ class QgsSymbolLayerModel : public QAbstractItemModel
    */
     QgsSymbolLayerModel( QgsVectorLayer *vl, QObject *parent SIP_TRANSFERTHIS = nullptr );
 
-    // Qt::ItemFlags flags( const QModelIndex &index ) const override;
     QVariant data( const QModelIndex &index, int role ) const override;
-    // QVariant headerData( int section, Qt::Orientation orientation, int role ) const override;
     int rowCount( const QModelIndex &parent = QModelIndex() ) const override;
     int columnCount( const QModelIndex & = QModelIndex() ) const override;
     QModelIndex index( int row, int column, const QModelIndex &parent = QModelIndex() ) const override;
@@ -127,28 +148,28 @@ class QgsSymbolLayerModel : public QAbstractItemModel
     void setSymbol( QgsSymbol *symbol );
     void loadSymbol( QgsSymbol *symbol, QgsSymbolLayerModelNode *parent );
 
-    //! TMP while be remove with QStandartItemModel
-    // void reloadSymbol();
-
+    /**
+     * Returns the model index corresponding to the given \a node.
+     * \see index2node()
+     */
     QModelIndex node2index( QgsSymbolLayerModelNode *node ) const;
+
+    /**
+     * Returns the model node corresponding to the given \a index.
+     * \see node2index()
+     */
     QgsSymbolLayerModelNode *index2node( const QModelIndex &index ) const;
 
+    //! Returns the root node of the model
     QgsSymbolLayerModelNode *rootNode() const { return mRootNode.get(); }
 
 
   private:
     QModelIndex indexOfParentTreeNode( QgsSymbolLayerModelNode *parentNode ) const;
 
-
-    //! Returns whether the node should be shown as expanded or collapsed in GUI
-    bool expanded() const;
-    //! Sets whether the node should be shown as expanded or collapsed in GUI
-    void setExpanded( bool expanded );
-
     std::unique_ptr<QgsSymbolLayerModelNode> mRootNode;
 
     QgsSymbol *mSymbol = nullptr;
-
 
     QPointer<QgsVectorLayer> mVectorLayer;
 };
