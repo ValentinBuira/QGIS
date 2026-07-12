@@ -632,8 +632,7 @@ void QgsSymbolSelectorWidget::moveLayerByOffset( int offset )
 
   // const QModelIndex newIdx = rowItems[0]->index();
 
-  int childrenCount = parent->children().count();
-  layersTree->setCurrentIndex( mSymbolLayersModel->node2index( parent->children().at( layerIdx - offset ) ) );
+  layersTree->setCurrentIndex( mSymbolLayersModel->node2index( parent->children().at( row + offset ) ) );
 
   updatePreview();
   updateUi();
