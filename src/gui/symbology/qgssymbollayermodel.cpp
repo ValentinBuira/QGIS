@@ -208,8 +208,8 @@ int QgsSymbolLayerModelNode::rowIndex() const
 
 QgsSymbolLayerModel::QgsSymbolLayerModel( QgsVectorLayer *vl, QObject *parent )
   : QAbstractItemModel( parent )
-  , mVectorLayer( vl )
   , mRootNode( std::make_unique<QgsSymbolLayerModelNode>() )
+  , mVectorLayer( vl )
 {}
 
 

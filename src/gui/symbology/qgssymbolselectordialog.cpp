@@ -37,7 +37,6 @@ using namespace Qt::StringLiterals;
 #include "qgssvgcache.h"
 #include "qgsimagecache.h"
 #include "qgsproject.h"
-#include "qgsguiutils.h"
 #include "qgsgui.h"
 #include "qgsmarkersymbol.h"
 #include "qgslinesymbol.h"
@@ -317,7 +316,7 @@ QgsSymbolWidgetContext QgsSymbolSelectorWidget::context() const
 }
 
 
-void QgsSymbolSelectorWidget::loadSymbol( QgsSymbol *symbol, QgsSymbolLayerModelNode *parent )
+void QgsSymbolSelectorWidget::loadSymbol( QgsSymbol *symbol )
 {
   if ( !symbol )
     return;
@@ -540,10 +539,8 @@ void QgsSymbolSelectorWidget::addLayer()
   const QgsProperty ddAngle( parentSymbol->type() == Qgis::SymbolType::Marker ? static_cast<QgsMarkerSymbol *>( parentSymbol )->dataDefinedAngle() : QgsProperty() );
   const QgsProperty ddWidth( parentSymbol->type() == Qgis::SymbolType::Line ? static_cast<QgsLineSymbol *>( parentSymbol )->dataDefinedWidth() : QgsProperty() );
 
-  QgsSymbolLayer *newLayerPtr = nullptr;
   {
     std::unique_ptr< QgsSymbolLayer > newLayer = QgsSymbolLayerRegistry::defaultSymbolLayer( parentSymbol->type() );
-    newLayerPtr = newLayer.get();
     if ( insertIdx == -1 )
       parentSymbol->appendSymbolLayer( newLayer.release() );
     else
@@ -795,9 +792,9 @@ void QgsSymbolSelectorDialog::reloadSymbol()
   mSelectorWidget->reloadSymbol();
 }
 
-void QgsSymbolSelectorDialog::loadSymbol( QgsSymbol *symbol, QgsSymbolLayerModelNode *parent )
+void QgsSymbolSelectorDialog::loadSymbol( QgsSymbol *symbol )
 {
-  mSelectorWidget->loadSymbol( symbol, parent );
+  mSelectorWidget->loadSymbol( symbol );
 }
 
 void QgsSymbolSelectorDialog::updateUi()

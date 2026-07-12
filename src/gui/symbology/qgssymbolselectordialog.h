@@ -145,7 +145,7 @@ class GUI_EXPORT QgsSymbolSelectorWidget : public QgsPanelWidget, private Ui::Qg
      * \param parent The parent symbol layer item. If the parent parameter is null, the whole symbol and model will be reset.
      * \note The ownership of the symbol is not transferred and must exist for the lifetime of the widget.
      */
-    void loadSymbol( QgsSymbol *symbol, QgsSymbolLayerModelNode *parent = nullptr ) SIP_SKIP;
+    void loadSymbol( QgsSymbol *symbol ) SIP_SKIP;
 
   public slots:
 
@@ -331,7 +331,7 @@ class GUI_EXPORT QgsSymbolSelectorDialog : public QDialog
      * \param symbol The symbol to load.
      * \param parent The parent symbol layer item. If the parent parameter is null, the whole symbol and model will be reset.
      */
-    void loadSymbol( QgsSymbol *symbol, QgsSymbolLayerModelNode *parent = nullptr ) SIP_SKIP;
+    void loadSymbol( QgsSymbol *symbol ) SIP_SKIP;
 
     /**
      * Returns a reference to the dialog's button box.
