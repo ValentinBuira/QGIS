@@ -51,7 +51,6 @@ class QgsSymbolLayerModelNode : public QObject
     ~QgsSymbolLayerModelNode() override;
 
 
-    void updatePreview();
     //! Returns whether the node is a symbol layer. And otherwise, it is a symbol.
     bool isLayer() const { return mIsLayer; }
 
@@ -155,6 +154,8 @@ class QgsSymbolLayerModel : public QAbstractItemModel
      * Updates the descendants of the given \a parent node with the given \a symbol.
      */
     void updateNode( QgsSymbol *symbol, QgsSymbolLayerModelNode *parent );
+
+    void updatePreview( QgsSymbolLayerModelNode *node );
 
     /**
      * Sets the \a symbol associated with the model.

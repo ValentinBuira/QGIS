@@ -60,7 +60,6 @@ void QgsSymbolLayerModelNode::setLayer( QgsSymbolLayer *layer, Qgis::SymbolType 
   mIsLayer = true;
   mSymbol = nullptr;
   mSymbolType = symbolType;
-  updatePreview();
 }
 
 void QgsSymbolLayerModelNode::setSymbol( QgsSymbol *symbol )
@@ -68,34 +67,22 @@ void QgsSymbolLayerModelNode::setSymbol( QgsSymbol *symbol )
   mSymbol = symbol;
   mIsLayer = false;
   mLayer = nullptr;
-  updatePreview();
-}
-
-void QgsSymbolLayerModelNode::updatePreview() //TODO check if this works
-{
-  if ( !mSize.isValid() )
-  {
-    const int size = QgsGuiUtils::scaleIconSize( 16 );
-    mSize = QSize( size, size );
-  }
-
-  if ( auto *lParent = parent() )
-    static_cast<QgsSymbolLayerModelNode *>( lParent )->updatePreview();
-
-  //Set Data icon
 }
 
 QIcon QgsSymbolLayerModelNode::icon() const
 {
+  const int size = QgsGuiUtils::scaleIconSize( 16 );
+  const QSize iconSize = QSize( size, size );
+
   QIcon icon;
   if ( mIsLayer )
     icon = QgsSymbolLayerUtils::
-      symbolLayerPreviewIcon( mLayer, Qgis::RenderUnit::Millimeters, mSize, QgsMapUnitScale(), mSymbol ? mSymbol->type() : mSymbolType, mVectorLayer, QgsScreenProperties( mScreen.data() ) );
+      symbolLayerPreviewIcon( mLayer, Qgis::RenderUnit::Millimeters, iconSize, QgsMapUnitScale(), mSymbol ? mSymbol->type() : mSymbolType, mVectorLayer, QgsScreenProperties( mScreen.data() ) );
   else
   {
     QgsExpressionContext expContext;
     expContext.appendScopes( QgsExpressionContextUtils::globalProjectLayerScopes( mVectorLayer ) );
-    icon = QIcon( QgsSymbolLayerUtils::symbolPreviewPixmap( mSymbol, mSize, 0, nullptr, false, &expContext, nullptr, QgsScreenProperties( mScreen.data() ) ) );
+    icon = QIcon( QgsSymbolLayerUtils::symbolPreviewPixmap( mSymbol, iconSize, 0, nullptr, false, &expContext, nullptr, QgsScreenProperties( mScreen.data() ) ) );
   }
   return icon;
 }
@@ -321,6 +308,16 @@ void QgsSymbolLayerModel::updateNode( QgsSymbol *symbol, QgsSymbolLayerModelNode
   loadSymbol( symbol, parent, true );
 
   endInsertRows();
+}
+
+void QgsSymbolLayerModel::updatePreview( QgsSymbolLayerModelNode *node )
+{
+  const QModelIndex index = node2index( node );
+  emit dataChanged( index, index, QVector<int>() << Qt::DecorationRole );
+
+  // Recursively update the parent's preview up to the root node.
+  if ( QgsSymbolLayerModelNode *lParent = node->parent() )
+    updatePreview( lParent );
 }
 
 

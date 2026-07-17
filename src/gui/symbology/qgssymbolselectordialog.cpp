@@ -379,7 +379,8 @@ void QgsSymbolSelectorWidget::updateLayerPreview()
   // get current layer item and update its icon
   QgsSymbolLayerModelNode *node = currentLayerNode();
   if ( node )
-    node->updatePreview();
+    mSymbolLayersModel->updatePreview( node );
+  // node->updatePreview();
   // update also preview of the whole symbol
   updatePreview();
 }
@@ -469,7 +470,6 @@ void QgsSymbolSelectorWidget::symbolChanged()
     // loadSymbol( symbol, parent );
     // mSymbolLayersModel->node parent->children().at( 0 )
     layersTree->setCurrentIndex( mSymbolLayersModel->node2index( parent->children().at( 0 ) ) );
-    parent->updatePreview();
   }
   else
   {
@@ -562,7 +562,6 @@ void QgsSymbolSelectorWidget::addLayer()
   mSymbolLayersModel->updateNode( parentSymbol, node );
   updateExpandedStateFromNode( node );
 
-  node->updatePreview();
 
   layersTree->setCurrentIndex( mSymbolLayersModel->node2index( node->children().at( 0 ) ) );
   updateUi();
@@ -582,7 +581,6 @@ void QgsSymbolSelectorWidget::removeLayer()
 
   mSymbolLayersModel->updateNode( parentSymbol, parent );
   updateExpandedStateFromNode( parent );
-  parent->updatePreview();
 
   const QModelIndex newIdx = mSymbolLayersModel->node2index( parent->children().at( 0 ) );
   layersTree->setCurrentIndex( newIdx );
@@ -625,7 +623,6 @@ void QgsSymbolSelectorWidget::moveLayerByOffset( int offset )
   updateExpandedStateFromNode( parent );
   // reloadSymbol();
 
-  parent->updatePreview();
 
   // const QModelIndex newIdx = rowItems[0]->index();
 
@@ -678,7 +675,6 @@ void QgsSymbolSelectorWidget::duplicateLayer()
   //   loadSymbol( newLayer->subSymbol(), newLayerItem );
   //   layersTree->setExpanded( newLayerItem->index(), true );
   // }
-  node->updatePreview();
 
   layersTree->setCurrentIndex( mSymbolLayersModel->node2index( node->children().at( insertIdx == -1 ? 0 : insertIdx ) ) );
   updateUi();
@@ -714,7 +710,6 @@ void QgsSymbolSelectorWidget::changeLayer( QgsSymbolLayer *newLayer )
   updateExpandedStateFromNode( parentNode );
   layersTree->setCurrentIndex( mSymbolLayersModel->node2index( parentNode->children().at( layerIdx ) ) );
 
-  parentNode->updatePreview();
   updatePreview();
   // Important: This lets the layer have its own layer properties widget
   layerChanged();
