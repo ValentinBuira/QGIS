@@ -146,7 +146,7 @@ class GUI_EXPORT QgsSymbolLayerModel : public QAbstractItemModel
     /**
      * Constructor for QgsSymbolLayerModel, with the specified \a parent object.
      */
-    QgsSymbolLayerModel( QgsVectorLayer *vl, QObject *parent SIP_TRANSFERTHIS = nullptr );
+    QgsSymbolLayerModel( QgsVectorLayer *vl, QObject *parent SIP_TRANSFERTHIS = nullptr, QScreen *screen = nullptr );
 
     QVariant data( const QModelIndex &index, int role ) const override;
     int rowCount( const QModelIndex &parent = QModelIndex() ) const override;
@@ -192,6 +192,8 @@ class GUI_EXPORT QgsSymbolLayerModel : public QAbstractItemModel
     QgsSymbol *mSymbol = nullptr;
 
     QPointer<QgsVectorLayer> mVectorLayer;
+
+    QPointer<QScreen> mScreen;
 
     friend class TestQgsSymbolLayerModel;
 };

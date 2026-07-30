@@ -177,7 +177,7 @@ QgsSymbolSelectorWidget::QgsSymbolSelectorWidget( QgsSymbol *symbol, QgsStyle *s
   btnUp->setIcon( QIcon( QgsApplication::iconPath( "mActionArrowUp.svg" ) ) );
   btnDown->setIcon( QIcon( QgsApplication::iconPath( "mActionArrowDown.svg" ) ) );
 
-  mSymbolLayersModel = new QgsSymbolLayerModel( mVectorLayer, layersTree );
+  mSymbolLayersModel = new QgsSymbolLayerModel( mVectorLayer, layersTree, screen() );
   // mSymbolLayersModel->setColumnCount( 2 );
 
   // Set the symbol

@@ -193,10 +193,11 @@ int QgsSymbolLayerModelNode::rowIndex() const
   return mParent->children().indexOf( this );
 }
 
-QgsSymbolLayerModel::QgsSymbolLayerModel( QgsVectorLayer *vl, QObject *parent )
+QgsSymbolLayerModel::QgsSymbolLayerModel( QgsVectorLayer *vl, QObject *parent, QScreen *screen )
   : QAbstractItemModel( parent )
   , mRootNode( std::make_unique<QgsSymbolLayerModelNode>() )
   , mVectorLayer( vl )
+  , mScreen( screen )
 {}
 
 
@@ -344,7 +345,7 @@ void QgsSymbolLayerModel::loadSymbol( QgsSymbol *symbol, QgsSymbolLayerModelNode
   QgsSymbolLayerModelNode *symbolNode;
   if ( !update )
   {
-    symbolNode = new QgsSymbolLayerModelNode( symbol, mVectorLayer, nullptr /*screen()*/ );
+    symbolNode = new QgsSymbolLayerModelNode( symbol, mVectorLayer, mScreen );
     parent->addChildNode( symbolNode );
   }
   else
@@ -356,7 +357,7 @@ void QgsSymbolLayerModel::loadSymbol( QgsSymbol *symbol, QgsSymbolLayerModelNode
   const int count = symbol->symbolLayerCount();
   for ( int i = count - 1; i >= 0; i-- )
   {
-    QgsSymbolLayerModelNode *layerNode = new QgsSymbolLayerModelNode( symbol->symbolLayer( i ), symbol->type(), mVectorLayer, nullptr /*screen()*/ );
+    QgsSymbolLayerModelNode *layerNode = new QgsSymbolLayerModelNode( symbol->symbolLayer( i ), symbol->type(), mVectorLayer, mScreen );
     //   layerItem->setEditable( false ); TODO check if this is set to false in QAbstractItemModel::flags
     symbolNode->addChildNode( layerNode );
     if ( symbol->symbolLayer( i )->subSymbol() )
