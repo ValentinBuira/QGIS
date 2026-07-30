@@ -1646,7 +1646,7 @@ set(QGIS_GUI_HDRS
   symbology/qgssymbollevelsdialog.h
   symbology/qgsextentbufferdialog.h
   symbology/qgssymbolselectordialog.h
-  symbology/qgssymbollayermodel.cpp
+  symbology/qgssymbollayermodel.h
   symbology/qgssymbolslistwidget.h
   symbology/qgssymbolwidgetcontext.h
   symbology/qgstemplatedcategorizedrendererwidget_p.h
