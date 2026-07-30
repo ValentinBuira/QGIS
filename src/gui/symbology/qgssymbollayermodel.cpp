@@ -25,7 +25,6 @@
 #include "qgssymbollayerutils.h"
 #include "qgsvectorlayer.h"
 
-#include <QStandardItem>
 #include <qscreen.h>
 
 #include "moc_qgssymbollayermodel.cpp"
@@ -119,8 +118,7 @@ QVariant QgsSymbolLayerModelNode::data( int role ) const
     if ( !mLayer->enabled() )
     {
       QPalette pal = qApp->palette();
-      // QBrush brush = QStandardItem::data( role ).value<QBrush>();
-      QBrush brush = QBrush(); // TODO check if this work
+      QBrush brush = QBrush();
       brush.setColor( pal.color( QPalette::Disabled, QPalette::WindowText ) );
       return brush;
     }
@@ -139,12 +137,8 @@ QVariant QgsSymbolLayerModelNode::data( int role ) const
     font.setBold( true );
     return font;
   }
-
-  //      if ( role == Qt::SizeHintRole )
-  //        return QVariant( QSize( 32, 32 ) );
-  if ( role == Qt::CheckStateRole )
+  else if ( role == Qt::CheckStateRole )
     return QVariant(); // could be true/false
-  // return QStandardItem::data( role );
   return QVariant();
 }
 
@@ -358,7 +352,6 @@ void QgsSymbolLayerModel::loadSymbol( QgsSymbol *symbol, QgsSymbolLayerModelNode
   for ( int i = count - 1; i >= 0; i-- )
   {
     QgsSymbolLayerModelNode *layerNode = new QgsSymbolLayerModelNode( symbol->symbolLayer( i ), symbol->type(), mVectorLayer, mScreen );
-    //   layerItem->setEditable( false ); TODO check if this is set to false in QAbstractItemModel::flags
     symbolNode->addChildNode( layerNode );
     if ( symbol->symbolLayer( i )->subSymbol() )
     {
@@ -367,18 +360,4 @@ void QgsSymbolLayerModel::loadSymbol( QgsSymbol *symbol, QgsSymbolLayerModelNode
     layerNode->setExpanded( true );
   }
   symbolNode->setExpanded( true );
-
-
-  //TODO keep in the view
-  // if ( mSymbol == symbol && !layersTree->currentIndex().isValid() )
-  // {
-  //   // make sure root item for symbol is selected in tree
-  //   layersTree->setCurrentIndex( symbolItem->index() );
-  // }
 }
-
-// void QgsSymbolLayerModel::reloadSymbol()
-// {
-//   // clear();
-//   // loadSymbol( mSymbol.get(), mRootNode.get() );
-// }
