@@ -823,6 +823,15 @@ QModelIndex QgsProcessingToolboxModel::indexOfParentTreeNode( QgsProcessingToolb
   return createIndex( row, 0, static_cast<QObject *>( parentNode ) );
 }
 
+QgsProcessingRegistry *QgsProcessingToolboxModel::processingRegistry() const
+{
+  if ( mRegistry )
+  {
+    return mRegistry.get();
+  }
+  return nullptr;
+}
+
 //
 // QgsProcessingToolboxProxyModel
 //
@@ -869,6 +878,14 @@ void QgsProcessingToolboxProxyModel::setInPlaceLayer( QgsVectorLayer *layer )
 void QgsProcessingToolboxProxyModel::setFilterString( const QString &filter )
 {
   mFilterString = filter;
+  invalidateFilter();
+}
+
+void QgsProcessingToolboxProxyModel::setFilterAlgorithmCompatibleWithOutput( const QString &outputName )
+{
+  mOutputName = outputName;
+
+  mFilters.setFlag( Filter::OutputCompatible );
   invalidateFilter();
 }
 
@@ -938,6 +955,22 @@ bool QgsProcessingToolboxProxyModel::filterAcceptsRow( int sourceRow, const QMod
         return false;
       }
     }
+
+
+    if ( mFilters & Filter::OutputCompatible )
+    {
+      // const QString algId = sourceModel()->data( sourceIndex, static_cast<int>( QgsProcessingToolboxModel::CustomRole::AlgorithmId ) ).toString();
+      const QgsProcessingAlgorithm *alg = mModel->algorithmForIndex( sourceIndex );
+      qDebug() << "filter out ?";
+      qDebug() << "mOutputName:" << mOutputName;
+      qDebug() << "alg id" << alg->id();
+      qDebug() << "true/false ?" << mModel->processingRegistry()->algorithmsCompatibleWithOutput( mOutputName ).contains( alg );
+      ;
+      if ( !mModel->processingRegistry()->algorithmsCompatibleWithOutput( mOutputName ).contains( alg ) )
+        return false;
+      // return mModel->processingRegistry()->algorithmsCompatibleWithOutput(mOutputName).contains(alg);
+    }
+
     if ( mFilters & Filter::Modeler )
     {
       bool isHiddenFromModeler = sourceModel()->data( sourceIndex, static_cast<int>( QgsProcessingToolboxModel::CustomRole::AlgorithmFlags ) ).toInt()
@@ -957,6 +990,11 @@ bool QgsProcessingToolboxProxyModel::filterAcceptsRow( int sourceRow, const QMod
     if ( mFilters & Filter::Toolbox )
     {
       /* Always hide in the toolbox */
+      return false;
+    }
+    if ( mFilters & Filter::OutputCompatible )
+    {
+      // Don't show any parameters if your looking for something compatible with output !
       return false;
     }
 
@@ -984,7 +1022,13 @@ bool QgsProcessingToolboxProxyModel::filterAcceptsRow( int sourceRow, const QMod
       }
     }
 
-    return true;
+    if ( mFilters & Filter::ParamCompatible )
+    {
+      // const QgsProcessingParameterType *paramType = mModel->parameterTypeForIndex( sourceIndex );
+      // paramType->acceptedParameterTypes().contains()
+    }
+
+    // return true;
   }
   bool hasChildren = false;
   // groups/providers are shown only if they have visible children

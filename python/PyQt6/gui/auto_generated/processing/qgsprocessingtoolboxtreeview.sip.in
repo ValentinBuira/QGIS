@@ -118,6 +118,11 @@ Returns the current filters controlling the view's contents.
 Sets the vector ``layer`` for the in-place algorithms
 %End
 
+    void setFilterAlgorithmCompatibleWithOutput( const QString &outputName );
+%Docstring
+TODO
+%End
+
   public slots:
 
     void setFilterString( const QString &filter );

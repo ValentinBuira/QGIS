@@ -173,6 +173,11 @@ const QgsProcessingAlgorithm *QgsProcessingProvider::algorithm( const QString &n
   return mAlgorithms.value( name );
 }
 
+QSet< const QgsProcessingAlgorithm * > QgsProcessingProvider::algorithmsCompatibleWithOutput( const QString &outputName ) const
+{
+  return mOutputCompatibleAlgorithms.value( outputName );
+}
+
 bool QgsProcessingProvider::addAlgorithm( QgsProcessingAlgorithm *algorithm )
 {
   if ( !algorithm )
@@ -190,6 +195,28 @@ bool QgsProcessingProvider::addAlgorithm( QgsProcessingAlgorithm *algorithm )
 
   algorithm->setProvider( this );
   mAlgorithms.insert( algorithm->name(), algorithm );
+
+  const auto parameterDefinitions = algorithm->parameterDefinitions();
+  for ( const QgsProcessingParameterDefinition *def : parameterDefinitions )
+  {
+    if ( def->flags() & Qgis::ProcessingParameterFlag::Hidden )
+      continue;
+
+    if ( !mInputCompatibleAlgorithms.contains( def->type() ) )
+      mInputCompatibleAlgorithms.insert( def->type(), QSet<const QgsProcessingAlgorithm *>() );
+
+    mInputCompatibleAlgorithms[def->type()].insert( algorithm );
+  }
+
+  const auto outputs = algorithm->outputDefinitions();
+  for ( const QgsProcessingOutputDefinition *output : outputs )
+  {
+    if ( !mOutputCompatibleAlgorithms.contains( output->type() ) )
+      mOutputCompatibleAlgorithms.insert( output->type(), QSet<const QgsProcessingAlgorithm *>() );
+
+    mOutputCompatibleAlgorithms[output->type()].insert( algorithm );
+  }
+
   return true;
 }
 

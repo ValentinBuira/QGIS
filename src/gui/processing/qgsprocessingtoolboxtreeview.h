@@ -123,6 +123,11 @@ class GUI_EXPORT QgsProcessingToolboxTreeView : public QTreeView
      */
     void setInPlaceLayer( QgsVectorLayer *layer );
 
+    /**
+     * TODO
+     */
+    void setFilterAlgorithmCompatibleWithOutput( const QString &outputName );
+
   public slots:
 
     /**

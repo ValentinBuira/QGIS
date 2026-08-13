@@ -462,6 +462,11 @@ class GUI_EXPORT QgsProcessingToolboxModel : public QAbstractItemModel
      */
     QModelIndex indexOfParentTreeNode( QgsProcessingToolboxModelNode *parentNode ) const;
 
+    /**
+     * Returns the processing registry associated with the model.
+     */
+    QgsProcessingRegistry *processingRegistry() const;
+
   signals:
 
     /**
@@ -525,8 +530,10 @@ class GUI_EXPORT QgsProcessingToolboxProxyModel : public QSortFilterProxyModel
     {
       Toolbox SIP_MONKEYPATCH_COMPAT_NAME( FilterToolbox ) = 1 << 1,                 //!< Filters out any algorithms and content which should not be shown in the toolbox
       Modeler SIP_MONKEYPATCH_COMPAT_NAME( FilterModeler ) = 1 << 2,                 //!< Filters out any algorithms and content which should not be shown in the modeler
-      InPlace SIP_MONKEYPATCH_COMPAT_NAME( FilterInPlace ) = 1 << 3,                 //!< Only show algorithms which support in-place edits
+      InPlace SIP_MONKEYPATCH_COMPAT_NAME( FilterInPlace ) = 1 << 3,                 //!< Only show algorithms which support in-place edits, mInPlaceLayer must be set
       ShowKnownIssues SIP_MONKEYPATCH_COMPAT_NAME( FilterShowKnownIssues ) = 1 << 4, //!< Show algorithms with known issues (hidden by default)
+      OutputCompatible = 1 << 5,                                                     //!< Only show algorithms compatible with a certain ouput
+      ParamCompatible = 1 << 6,                                                      //!< Only show algorithms compatible with a certain parameters
     };
     Q_ENUM( Filter )
     Q_DECLARE_FLAGS( Filters, Filter )
@@ -594,6 +601,11 @@ class GUI_EXPORT QgsProcessingToolboxProxyModel : public QSortFilterProxyModel
     void setFilterString( const QString &filter );
 
     /**
+     * TODO
+     */
+    void setFilterAlgorithmCompatibleWithOutput( const QString &output );
+
+    /**
      * Returns the current filter string, if set.
      *
      * \see setFilterString()
@@ -609,6 +621,7 @@ class GUI_EXPORT QgsProcessingToolboxProxyModel : public QSortFilterProxyModel
     Filters mFilters = Filters();
     QString mFilterString;
     QPointer<QgsVectorLayer> mInPlaceLayer;
+    QString mOutputName;
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS( QgsProcessingToolboxProxyModel::Filters )
 
