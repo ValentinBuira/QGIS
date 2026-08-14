@@ -642,7 +642,7 @@ void QgsRubberBand::drawShape( QPainter *p, const QVector<QPointF> &pts )
           case Qgis::RubberBandIconType::SVG:
           {
             QRectF viewBox = mSvgRenderer->viewBoxF();
-            QRectF r( mSvgOffset.x(), mSvgOffset.y(), viewBox.width(), viewBox.height() );
+            QRectF r( mSvgOffset.x(), mSvgOffset.y(), viewBox.width() * s, viewBox.height() * s );
             QgsScopedQPainterState painterState( p );
             p->translate( pt );
             mSvgRenderer->render( p, r );
